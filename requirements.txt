@@ -1,0 +1,4 @@
+# That is the whole dependency list. The web server is stdlib http.server,
+# the Ollama client is stdlib urllib, and EML parsing is stdlib xml.etree.
+numpy>=1.24
+scikit-learn>=1.3

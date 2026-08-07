@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Raw EML is refetched by harvest.py, not committed (31 MB).
+data/eml/
+
+# Intermediate build artefacts
+*.pkl
+.DS_Store
+.idea/
+.vscode/

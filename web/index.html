@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harvard Forest dataset search</title>
+<style>
+  :root {
+    --bg: #fbfaf8; --fg: #1c1a17; --muted: #6b6660; --line: #e3ded6;
+    --card: #fff; --accent: #2d6a4f; --accent-soft: #e8f1ec; --warn: #7d2b2b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14130f; --fg: #ece8e1; --muted: #948d84; --line: #2c2a25;
+      --card: #1c1a16; --accent: #7fc9a4; --accent-soft: #1d2a23; --warn: #e08585;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.55 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-size: 1.45rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 26px; }
+  .searchbar { display: flex; gap: 8px; margin-bottom: 12px; }
+  input[type=search] {
+    flex: 1; padding: 13px 16px; font-size: 1rem; font-family: inherit;
+    border: 1px solid var(--line); border-radius: 10px;
+    background: var(--card); color: var(--fg);
+  }
+  input[type=search]:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  button {
+    padding: 13px 20px; font-size: 0.95rem; font-family: inherit; font-weight: 600;
+    border: 0; border-radius: 10px; background: var(--accent); color: var(--bg);
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .modes { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .mode {
+    padding: 5px 12px; font-size: 0.82rem; border: 1px solid var(--line);
+    border-radius: 999px; background: transparent; color: var(--muted);
+    cursor: pointer; font-weight: 500;
+  }
+  .mode[aria-pressed=true] {
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
+  }
+  .examples { font-size: 0.83rem; color: var(--muted); margin: 14px 0 22px; }
+  .examples button {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    padding: 4px 10px; border-radius: 999px; font-size: 0.8rem;
+    font-weight: 400; margin: 3px 4px 0 0; cursor: pointer;
+  }
+  .meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; min-height: 1.2em; }
+  .hit {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px;
+  }
+  .hit-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .hid { font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+         font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+  .htitle { font-weight: 600; flex: 1; min-width: 200px; }
+  .score { font-family: ui-monospace, Consolas, monospace; font-size: 0.78rem;
+           color: var(--muted); }
+  .why { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+  .why b { color: var(--accent); font-weight: 600; }
+  .abs { font-size: 0.87rem; color: var(--muted); margin-top: 8px; }
+  a { color: var(--accent); }
+  .err { color: var(--warn); white-space: pre-wrap; font-size: 0.86rem;
+         border: 1px solid var(--warn); border-radius: 10px; padding: 12px 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Harvard Forest dataset search</h1>
+  <div class="sub">Semantic search over <b id="n">458</b> archive datasets &middot; embeddings by bge-m3, running locally</div>
+
+  <form class="searchbar" id="f">
+    <input type="search" id="q" placeholder="what are you looking for?" autocomplete="off" autofocus>
+    <button type="submit" id="go">Search</button>
+  </form>
+
+  <div class="modes">
+    <button class="mode" data-m="hybrid"   aria-pressed="true">hybrid</button>
+    <button class="mode" data-m="semantic" aria-pressed="false">semantic</button>
+    <button class="mode" data-m="lexical"  aria-pressed="false">lexical</button>
+  </div>
+
+  <div class="examples">
+    Try:
+    <button class="ex">understory light sensors</button>
+    <button class="ex">diffuse and direct solar radiation</button>
+    <button class="ex">how much leaf material falls each autumn</button>
+    <button class="ex">hemlock woolly adelgid damage</button>
+    <button class="ex">soil respiration chambers</button>
+  </div>
+
+  <div class="meta" id="meta"></div>
+  <div id="out"></div>
+</div>
+
+<script>
+let mode = "hybrid";
+
+document.querySelectorAll(".mode").forEach(b => b.onclick = () => {
+  mode = b.dataset.m;
+  document.querySelectorAll(".mode").forEach(x =>
+    x.setAttribute("aria-pressed", String(x === b)));
+  if (document.getElementById("q").value.trim()) run();
+});
+
+document.querySelectorAll(".ex").forEach(b => b.onclick = () => {
+  document.getElementById("q").value = b.textContent;
+  run();
+});
+
+document.getElementById("f").onsubmit = e => { e.preventDefault(); run(); };
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g,
+  c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+async function run() {
+  const q = document.getElementById("q").value.trim();
+  if (!q) return;
+  const out = document.getElementById("out"), meta = document.getElementById("meta");
+  const go = document.getElementById("go");
+  go.disabled = true;
+  meta.textContent = "searching…";
+  out.innerHTML = "";
+  try {
+    const r = await fetch(`/api/search?q=${encodeURIComponent(q)}&mode=${mode}&k=10`);
+    const d = await r.json();
+    if (!r.ok) {
+      meta.textContent = "";
+      out.innerHTML = `<div class="err">${esc(d.error)}${d.hint ? "\n\n" + esc(d.hint) : ""}</div>`;
+      return;
+    }
+    meta.textContent = `${d.results.length} results · ${d.mode} · ${d.ms} ms`;
+    out.innerHTML = d.results.map(h => `
+      <div class="hit">
+        <div class="hit-top">
+          <span class="hid">${esc(h.id)}</span>
+          <span class="htitle">${esc(h.title)}</span>
+          <span class="score">${h.score}</span>
+        </div>
+        <div class="why">matched on <b>${esc(h.why)}</b>${
+          h.temporal && h.temporal.begin
+            ? ` · ${esc(h.temporal.begin)}–${esc(h.temporal.end || "")}` : ""
+        } · ${h.n_tables} table${h.n_tables === 1 ? "" : "s"} ·
+          <a href="${esc(h.url)}" target="_blank" rel="noopener">archive</a></div>
+        <div class="abs">${esc(h.abstract)}</div>
+      </div>`).join("");
+  } catch (err) {
+    meta.textContent = "";
+    out.innerHTML = `<div class="err">${esc(err)}</div>`;
+  } finally {
+    go.disabled = false;
+  }
+}
+
+fetch("/api/status").then(r => r.json()).then(d => {
+  document.getElementById("n").textContent = d.datasets;
+  if (!d.ollama || !d.model_pulled) {
+    document.getElementById("meta").innerHTML =
+      `<span style="color:var(--warn)">Ollama not detected — semantic and
+       hybrid need it. Lexical mode works now.</span>`;
+  }
+}).catch(() => {});
+</script>
+</body>
+</html>
