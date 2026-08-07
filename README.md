@@ -1,12 +1,17 @@
-# Harvard Forest dataset search
+# Harvard Forest Search: Semantic + Lexical
+Run a powerful, hybrid search engine over all 458 datasets in the [Harvard Forest data archive](https://harvardforest.fas.harvard.edu/harvard-forest-data-archive),—locally on your own machine. 
+## The Problem
+The official archive search is frustrating. Finding data requires guessing IDs, digging through prose landing pages, and repeating the process endlessly.
+## The Solution
+This project fixes the archive's search experience by bringing it local and making it smart:
 
-Semantic search over all **458 datasets** in the [Harvard Forest data
-archive](https://harvardforest.fas.harvard.edu/harvard-forest-data-archive),
-running entirely on your own machine.
+* Parses EML metadata for every dataset automatically.
+* Embeds the text using bge-m3 via local Ollama.
+* Searches conceptually, letting you find what you need using natural language.
 
 ![the search bar, switching from semantic to keyword matching on the same query](docs/demo.gif)
 
-The archive has no search worth the name. You guess an ID, open a landing page,
+The archive has a poor search experience. You guess an ID, open a landing page,
 read prose, repeat. This project reads every dataset's EML metadata, embeds it
 with `bge-m3` through a local Ollama, and lets you ask for what you want in
 whatever words you happen to use.
