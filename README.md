@@ -105,10 +105,18 @@ python -m hf_search.semantic --build    # re-embed, ~40 s
 
 ---
 
-## Things that did not work
+## Known limits
 
-Recorded because a demo that reports only its wins is not worth reading. Every
-number below is measured, not recalled.
+- Casual phrasing still misses. *"How much sunlight reaches the forest floor"*
+  does not find hf206, and *"cloudy versus clear sky sunlight split"* does not
+  find hf249 — under any engine. `bge-m3` handles domain vocabulary well and
+  colloquial paraphrase poorly on this corpus.
+- Retrieval is sensitive to wording: hf375 is rank 1 for "plot coordinates
+  latitude longitude" and absent for "where are the plots located".
+- 17 hand-written queries is a small evaluation set. Treat single points
+  sceptically; the tables are directional.
+  
+### Other limitations
 
 **Cross-encoder reranking made it worse.** The literature calls this the single
 highest-impact retrieval component (+17.2 pp MRR@3 reported elsewhere). Here,
@@ -142,19 +150,6 @@ auto queries are literal excerpts of the indexed text. Only the `title` family,
 where distinctive words are stripped, is a fair cross-engine comparison. The
 large set is useful for detecting regressions within one engine, not for ranking
 engines against each other.
-
----
-
-## Known limits
-
-- Casual phrasing still misses. *"How much sunlight reaches the forest floor"*
-  does not find hf206, and *"cloudy versus clear sky sunlight split"* does not
-  find hf249 — under any engine. `bge-m3` handles domain vocabulary well and
-  colloquial paraphrase poorly on this corpus.
-- Retrieval is sensitive to wording: hf375 is rank 1 for "plot coordinates
-  latitude longitude" and absent for "where are the plots located".
-- 17 hand-written queries is a small evaluation set. Treat single points
-  sceptically; the tables are directional.
 
 ---
 
