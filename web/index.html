@@ -45,13 +45,7 @@
   .mode[aria-pressed=true] {
     background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
   }
-  .examples { font-size: 0.83rem; color: var(--muted); margin: 14px 0 22px; }
-  .examples button {
-    background: transparent; border: 1px solid var(--line); color: var(--muted);
-    padding: 4px 10px; border-radius: 999px; font-size: 0.8rem;
-    font-weight: 400; margin: 3px 4px 0 0; cursor: pointer;
-  }
-  .meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; min-height: 1.2em; }
+  .meta { font-size: 0.82rem; color: var(--muted); margin: 20px 0 14px; min-height: 1.2em; }
   .hit {
     background: var(--card); border: 1px solid var(--line); border-radius: 10px;
     padding: 14px 16px; margin-bottom: 10px;
@@ -86,15 +80,6 @@
     <button class="mode" data-m="lexical"  aria-pressed="false">lexical</button>
   </div>
 
-  <div class="examples">
-    Try:
-    <button class="ex">understory light sensors</button>
-    <button class="ex">diffuse and direct solar radiation</button>
-    <button class="ex">how much leaf material falls each autumn</button>
-    <button class="ex">hemlock woolly adelgid damage</button>
-    <button class="ex">soil respiration chambers</button>
-  </div>
-
   <div class="meta" id="meta"></div>
   <div id="out"></div>
 </div>
@@ -107,11 +92,6 @@ document.querySelectorAll(".mode").forEach(b => b.onclick = () => {
   document.querySelectorAll(".mode").forEach(x =>
     x.setAttribute("aria-pressed", String(x === b)));
   if (document.getElementById("q").value.trim()) run();
-});
-
-document.querySelectorAll(".ex").forEach(b => b.onclick = () => {
-  document.getElementById("q").value = b.textContent;
-  run();
 });
 
 document.getElementById("f").onsubmit = e => { e.preventDefault(); run(); };

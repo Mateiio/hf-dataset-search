@@ -4,20 +4,27 @@ Semantic search over all **458 datasets** in the [Harvard Forest data
 archive](https://harvardforest.fas.harvard.edu/harvard-forest-data-archive),
 running entirely on your own machine.
 
+![the search bar, switching from semantic to keyword matching on the same query](docs/demo.gif)
+
 The archive has no search worth the name. You guess an ID, open a landing page,
 read prose, repeat. This project reads every dataset's EML metadata, embeds it
 with `bge-m3` through a local Ollama, and lets you ask for what you want in
 whatever words you happen to use.
 
+The clip above is one query — *"how much leaf material falls each autumn"* —
+with the engine toggled from **hybrid** to **lexical**. Nobody in the archive
+writes it that way; they write *litterfall*:
+
 ```
-$ python -m hf_search.hybrid "how much leaf material falls each autumn"
-  0.6084  hf151    Litterfall at Harvard Forest HEM and LPH Towers since 2002
+hybrid   ->  hf151  Litterfall at Harvard Forest HEM and LPH Towers
+lexical  ->  hf342  Gene Expression and Tree Growth
+             hf178  Stream Suspended Sediment and Particulate Organic Matter
 ```
 
-No dataset in the archive contains the phrase "how much leaf material falls each
-autumn". Keyword search returns a gene-expression study and a landowner survey.
+Keyword search returns a gene-expression study and stream sediment. That gap is
+the entire point of the project.
 
-See **[DEMO.md](DEMO.md)** for captured output from a real run.
+See **[DEMO.md](DEMO.md)** for captured terminal output from a real run.
 
 ---
 
