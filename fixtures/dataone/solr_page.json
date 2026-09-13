@@ -1,0 +1,26 @@
+{
+  "responseHeader": {
+    "status": 0,
+    "QTime": 4,
+    "params": {
+      "q": "id:\"https://pasta.lternet.edu/package/metadata/eml/knb-lter-hfr/116/16\"",
+      "fl": "id,formatId,datasource,obsoletedBy,obsoletes,dateUploaded,size",
+      "rows": "5",
+      "wt": "json"
+    }
+  },
+  "response": {
+    "numFound": 1,
+    "start": 0,
+    "docs": [
+      {
+        "id": "https://pasta.lternet.edu/package/metadata/eml/knb-lter-hfr/116/16",
+        "formatId": "https://eml.ecoinformatics.org/eml-2.2.0",
+        "size": 78808,
+        "obsoletes": "https://pasta.lternet.edu/package/metadata/eml/knb-lter-hfr/116/15",
+        "dateUploaded": "2023-12-05T17:51:34.703Z",
+        "datasource": "urn:node:LTER"
+      }
+    ]
+  }
+}

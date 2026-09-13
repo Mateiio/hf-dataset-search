@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><?xml-stylesheet type="text/xsl" href="/cn/xslt/dataone.types.v2.xsl" ?>
+<ns2:objectList xmlns:ns2="http://ns.dataone.org/service/types/v1" count="3" start="0" total="2926">
+    <objectInfo>
+        <identifier>https://pasta.lternet.edu/package/metadata/eml/edi/458/15</identifier>
+        <formatId>https://eml.ecoinformatics.org/eml-2.2.0</formatId>
+        <checksum algorithm="SHA-1">4ec5b65b50f1f46c0e0b05d70adec2d94420909e</checksum>
+        <dateSysMetadataModified>2026-09-10T14:30:16.313+00:00</dateSysMetadataModified>
+        <size>42835</size>
+    </objectInfo>
+    <objectInfo>
+        <identifier>https://pasta.lternet.edu/package/metadata/eml/edi/2440/1</identifier>
+        <formatId>https://eml.ecoinformatics.org/eml-2.2.0</formatId>
+        <checksum algorithm="SHA-1">e724a0d79986f1e2e6ed5d3f5079c7dac3d99fa6</checksum>
+        <dateSysMetadataModified>2026-09-10T14:30:08.802+00:00</dateSysMetadataModified>
+        <size>97613</size>
+    </objectInfo>
+    <objectInfo>
+        <identifier>https://pasta.lternet.edu/package/metadata/eml/edi/1147/5</identifier>
+        <formatId>https://eml.ecoinformatics.org/eml-2.2.0</formatId>
+        <checksum algorithm="SHA-1">c67bfda47e09dd719f499abc35c69efb288bf26a</checksum>
+        <dateSysMetadataModified>2026-09-09T21:30:07.789+00:00</dateSysMetadataModified>
+        <size>54569</size>
+    </objectInfo>
+</ns2:objectList>

@@ -12,3 +12,8 @@ data/eml/
 .DS_Store
 .idea/
 .vscode/
+
+# EDI corpus (edisearch/). Listings and raw EML are refetched by the probe
+# and the harvester, not committed. records.jsonl ships once M1 produces it.
+data/probe/
+data/raw/
