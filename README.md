@@ -82,6 +82,27 @@ python -m hf_search.benchmark            # reproduce the table above
 
 Lexical mode needs no model at all and works offline.
 
+### Trace mode
+
+Toggle **trace** next to the engine pills to watch a query move through the
+pipeline as it runs. The page opens a streamed connection (`/api/trace`) and
+the server pushes one event per stage the moment that stage finishes, so the
+progress bar and the lane diagram track the real code, not a spinner.
+
+Each stage reports what it actually did on this query: which of your terms the
+TF-IDF vocabulary knows and which it does not, the top cosines from each
+engine, which datasets the column index injected and why, and -- for hybrid --
+the full reciprocal-rank-fusion table: every result's semantic rank, lexical
+rank, the two contributions, and the fused score. Timings are wall-clock; the
+embedding round trip to Ollama is usually the only stage that takes visible
+time.
+
+The same trace prints on the command line:
+
+```bash
+python -m hf_search.hybrid --trace "walk-up tower understory PAR sensors"
+```
+
 ### Rebuilding from the archive
 
 ```bash
@@ -100,8 +121,9 @@ python -m hf_search.semantic --build    # re-embed, ~40 s
 3. **`corpus.py`** builds the text each engine indexes. The two engines get
    *different* text, deliberately — see below.
 4. **`lexical.py`** / **`semantic.py`** / **`hybrid.py`** are the engines.
-5. **`server.py`** is a stdlib `http.server` serving one HTML page and one JSON
-   endpoint. No framework, no build step.
+5. **`trace.py`** wraps each stage so a search can report what it did.
+6. **`server.py`** is a stdlib `http.server` serving one HTML page, one JSON
+   endpoint and one event stream. No framework, no build step.
 
 ---
 

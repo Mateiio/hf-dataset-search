@@ -8,11 +8,17 @@
   :root {
     --bg: #fbfaf8; --fg: #1c1a17; --muted: #6b6660; --line: #e3ded6;
     --card: #fff; --accent: #2d6a4f; --accent-soft: #e8f1ec; --warn: #7d2b2b;
+    --lex: #3b5bdb; --lex-soft: #e9edfb;
+    --fuse: #a8690f; --fuse-soft: #fbf1dc;
+    --both: #6b6660; --both-soft: #f0ede8;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #14130f; --fg: #ece8e1; --muted: #948d84; --line: #2c2a25;
       --card: #1c1a16; --accent: #7fc9a4; --accent-soft: #1d2a23; --warn: #e08585;
+      --lex: #8fa3f0; --lex-soft: #1e2333;
+      --fuse: #e0b45c; --fuse-soft: #2c2716;
+      --both: #948d84; --both-soft: #22201b;
     }
   }
   * { box-sizing: border-box; }
@@ -36,7 +42,7 @@
     cursor: pointer;
   }
   button:disabled { opacity: 0.5; cursor: default; }
-  .modes { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .modes { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
   .mode {
     padding: 5px 12px; font-size: 0.82rem; border: 1px solid var(--line);
     border-radius: 999px; background: transparent; color: var(--muted);
@@ -45,6 +51,9 @@
   .mode[aria-pressed=true] {
     background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
   }
+  .mode.trace { margin-left: auto; border-style: dashed; gap: 6px; display: inline-flex; align-items: center; }
+  .mode.trace[aria-pressed=true] { border-style: solid; background: var(--fuse-soft); border-color: var(--fuse); color: var(--fuse); }
+  .mode.trace i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
   .meta { font-size: 0.82rem; color: var(--muted); margin: 20px 0 14px; min-height: 1.2em; }
   .hit {
     background: var(--card); border: 1px solid var(--line); border-radius: 10px;
@@ -62,6 +71,88 @@
   a { color: var(--accent); }
   .err { color: var(--warn); white-space: pre-wrap; font-size: 0.86rem;
          border: 1px solid var(--warn); border-radius: 10px; padding: 12px 14px; }
+
+  /* ---------- trace panel ---------- */
+  .mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+  #tracebox { display: none; margin: 18px 0 8px; }
+  #tracebox.on { display: block; }
+  .route {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 16px 12px; margin-bottom: 14px;
+  }
+  .route-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .route-head b { font-size: 0.86rem; }
+  .route-head .q { font-size: 0.86rem; color: var(--muted); flex: 1; min-width: 160px;
+                   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend { font-size: 0.74rem; color: var(--muted); display: flex; gap: 12px; }
+  .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: 0; }
+  .diagram-wrap { overflow-x: auto; padding-bottom: 4px; }
+  .diagram { display: grid; gap: 10px 26px; align-items: center; min-width: 560px; }
+  .chip {
+    position: relative; border: 1px dashed var(--line); border-radius: 9px;
+    padding: 7px 10px; font-size: 0.78rem; line-height: 1.25; color: var(--muted);
+    background: transparent; min-width: 96px; transition: border-color .15s, background .15s, color .15s;
+  }
+  .chip .ck { font-weight: 600; display: block; }
+  .chip .cms { display: block; font-size: 0.7rem; opacity: 0.85; min-height: 0.9em; }
+  .chip::after {
+    content: ""; position: absolute; right: -22px; top: 50%; width: 14px; height: 1px;
+    background: var(--line);
+  }
+  .chip::before {
+    content: ""; position: absolute; right: -10px; top: 50%; margin-top: -3px;
+    border: 3px solid transparent; border-left: 5px solid var(--line);
+  }
+  .chip.last::after, .chip.last::before { display: none; }
+  .chip.active { border-style: solid; animation: pulse 0.9s ease-in-out infinite; }
+  .chip.done { border-style: solid; }
+  .chip.failed { border-style: solid; border-color: var(--warn); color: var(--warn); background: transparent; }
+  .chip.lane-sem.active, .chip.lane-sem.done { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .chip.lane-lex.active, .chip.lane-lex.done { border-color: var(--lex); color: var(--lex); background: var(--lex-soft); }
+  .chip.lane-fuse.active, .chip.lane-fuse.done { border-color: var(--fuse); color: var(--fuse); background: var(--fuse-soft); }
+  .chip.lane-both.active, .chip.lane-both.done { border-color: var(--both); color: var(--fg); background: var(--both-soft); }
+  .chip.span2 { grid-row: 1 / span 2; }
+  .wire { position: relative; height: 1px; background: var(--line); align-self: center; }
+  .wire::after { content: ""; position: absolute; right: -22px; top: 0; width: 14px; height: 1px; background: var(--line); }
+  .wire::before { content: ""; position: absolute; right: -10px; top: -3px; border: 3px solid transparent; border-left: 5px solid var(--line); }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 3px var(--line); } }
+
+  .bar { margin-top: 14px; }
+  .bar-track { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .bar-fill { height: 100%; width: 0; border-radius: 999px; background: var(--accent); transition: width .18s ease-out; }
+  .bar-fill.failed { background: var(--warn); }
+  .bar-label { display: flex; justify-content: space-between; gap: 12px; font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+  .bar-label .cur { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .stage {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 16px 14px; margin-bottom: 10px; animation: rise .22s ease-out;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .stage.failed { border-color: var(--warn); }
+  .sh { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .si { font-size: 0.72rem; color: var(--muted); min-width: 1.4em; }
+  .sl { font-weight: 600; font-size: 0.92rem; flex: 1; min-width: 200px; }
+  .lane { font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; padding: 1px 7px; border-radius: 999px; font-weight: 600; }
+  .lane.lane-sem  { color: var(--accent); background: var(--accent-soft); }
+  .lane.lane-lex  { color: var(--lex);    background: var(--lex-soft); }
+  .lane.lane-fuse { color: var(--fuse);   background: var(--fuse-soft); }
+  .lane.lane-both { color: var(--both);   background: var(--both-soft); }
+  .sms { font-size: 0.78rem; color: var(--muted); }
+  .sbar { height: 3px; background: var(--line); border-radius: 999px; margin: 8px 0 10px; overflow: hidden; }
+  .sbar i { display: block; height: 100%; width: 0; background: var(--muted); border-radius: 999px; transition: width .3s; }
+  .facts { display: grid; grid-template-columns: max-content 1fr; gap: 3px 16px; font-size: 0.82rem; }
+  .fk { color: var(--muted); white-space: nowrap; }
+  .fv { overflow-wrap: anywhere; }
+  .tt { font-size: 0.78rem; font-weight: 600; margin: 12px 0 5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .tw { overflow-x: auto; }
+  table { border-collapse: collapse; font-size: 0.8rem; width: 100%; }
+  th, td { text-align: left; padding: 4px 10px 4px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.num, th.num { text-align: right; font-family: ui-monospace, Consolas, monospace; white-space: nowrap; }
+  tr.final td { font-weight: 600; }
+  .tn, .note { font-size: 0.8rem; color: var(--muted); margin-top: 8px; font-style: italic; }
+  .stage .err { margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -78,6 +169,30 @@
     <button class="mode" data-m="hybrid"   aria-pressed="true">hybrid</button>
     <button class="mode" data-m="semantic" aria-pressed="false">semantic</button>
     <button class="mode" data-m="lexical"  aria-pressed="false">lexical</button>
+    <button class="mode trace" id="tr" aria-pressed="false" title="Stream every stage the query passes through"><i></i>trace</button>
+  </div>
+
+  <div id="tracebox">
+    <div class="route">
+      <div class="route-head">
+        <b>Where the query goes</b>
+        <span class="q" id="rq"></span>
+        <span class="legend">
+          <span><i style="background:var(--accent)"></i>semantic</span>
+          <span><i style="background:var(--lex)"></i>lexical</span>
+          <span><i style="background:var(--fuse)"></i>fusion</span>
+        </span>
+      </div>
+      <div class="diagram-wrap"><div class="diagram" id="diagram"></div></div>
+      <div class="bar">
+        <div class="bar-track"><div class="bar-fill" id="fill"></div></div>
+        <div class="bar-label">
+          <span class="cur" id="cur">waiting for plan…</span>
+          <span class="mono" id="elapsed">0 ms</span>
+        </div>
+      </div>
+    </div>
+    <div id="stages"></div>
   </div>
 
   <div class="meta" id="meta"></div>
@@ -86,62 +201,262 @@
 
 <script>
 let mode = "hybrid";
+let trace = false;
+try { trace = localStorage.getItem("hf.trace") === "1"; } catch (_) {}
 
-document.querySelectorAll(".mode").forEach(b => b.onclick = () => {
-  mode = b.dataset.m;
-  document.querySelectorAll(".mode").forEach(x =>
-    x.setAttribute("aria-pressed", String(x === b)));
-  if (document.getElementById("q").value.trim()) run();
-});
-
-document.getElementById("f").onsubmit = e => { e.preventDefault(); run(); };
-
+const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g,
   c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmtMs = ms => ms < 1 ? ms.toFixed(2) + " ms" : ms < 10 ? ms.toFixed(1) + " ms" : Math.round(ms) + " ms";
+
+document.querySelectorAll(".mode[data-m]").forEach(b => b.onclick = () => {
+  mode = b.dataset.m;
+  document.querySelectorAll(".mode[data-m]").forEach(x =>
+    x.setAttribute("aria-pressed", String(x === b)));
+  if ($("q").value.trim()) run();
+});
+
+function setTrace(on) {
+  trace = on;
+  $("tr").setAttribute("aria-pressed", String(on));
+  try { localStorage.setItem("hf.trace", on ? "1" : "0"); } catch (_) {}
+  if (!on) $("tracebox").classList.remove("on");
+}
+$("tr").onclick = () => { setTrace(!trace); if ($("q").value.trim()) run(); };
+setTrace(trace);
+
+$("f").onsubmit = e => { e.preventDefault(); run(); };
+
+function renderHits(d) {
+  $("meta").textContent = `${d.results.length} results · ${d.mode} · ${d.ms} ms`;
+  $("out").innerHTML = d.results.map(h => `
+    <div class="hit">
+      <div class="hit-top">
+        <span class="hid">${esc(h.id)}</span>
+        <span class="htitle">${esc(h.title)}</span>
+        <span class="score">${h.score}</span>
+      </div>
+      <div class="why">matched on <b>${esc(h.why)}</b>${
+        h.temporal && h.temporal.begin
+          ? ` · ${esc(h.temporal.begin)}–${esc(h.temporal.end || "")}` : ""
+      } · ${h.n_tables} table${h.n_tables === 1 ? "" : "s"} ·
+        <a href="${esc(h.url)}" target="_blank" rel="noopener">archive</a></div>
+      <div class="abs">${esc(h.abstract)}</div>
+    </div>`).join("");
+}
+
+function showError(d) {
+  $("meta").textContent = "";
+  $("out").innerHTML = `<div class="err">${esc(d.error)}${d.hint ? "\n\n" + esc(d.hint) : ""}</div>`;
+}
 
 async function run() {
-  const q = document.getElementById("q").value.trim();
+  const q = $("q").value.trim();
   if (!q) return;
-  const out = document.getElementById("out"), meta = document.getElementById("meta");
-  const go = document.getElementById("go");
+  if (trace) return runTraced(q);
+  const go = $("go");
   go.disabled = true;
-  meta.textContent = "searching…";
-  out.innerHTML = "";
+  $("meta").textContent = "searching…";
+  $("out").innerHTML = "";
   try {
     const r = await fetch(`/api/search?q=${encodeURIComponent(q)}&mode=${mode}&k=10`);
     const d = await r.json();
-    if (!r.ok) {
-      meta.textContent = "";
-      out.innerHTML = `<div class="err">${esc(d.error)}${d.hint ? "\n\n" + esc(d.hint) : ""}</div>`;
-      return;
-    }
-    meta.textContent = `${d.results.length} results · ${d.mode} · ${d.ms} ms`;
-    out.innerHTML = d.results.map(h => `
-      <div class="hit">
-        <div class="hit-top">
-          <span class="hid">${esc(h.id)}</span>
-          <span class="htitle">${esc(h.title)}</span>
-          <span class="score">${h.score}</span>
-        </div>
-        <div class="why">matched on <b>${esc(h.why)}</b>${
-          h.temporal && h.temporal.begin
-            ? ` · ${esc(h.temporal.begin)}–${esc(h.temporal.end || "")}` : ""
-        } · ${h.n_tables} table${h.n_tables === 1 ? "" : "s"} ·
-          <a href="${esc(h.url)}" target="_blank" rel="noopener">archive</a></div>
-        <div class="abs">${esc(h.abstract)}</div>
-      </div>`).join("");
+    if (!r.ok) return showError(d);
+    renderHits(d);
   } catch (err) {
-    meta.textContent = "";
-    out.innerHTML = `<div class="err">${esc(err)}</div>`;
+    showError({ error: String(err) });
+  } finally {
+    go.disabled = false;
+  }
+}
+
+/* ---------- traced search: consume the event stream ---------- */
+
+let T = null;   // state of the trace in flight
+
+function laneOf(key) { return (T && T.lane[key]) || "both"; }
+
+function buildDiagram(stages) {
+  // Shared stages run in one row; where the plan has both a semantic and a
+  // lexical lane, those run as two parallel rows that converge on the fusion
+  // step. Positions are computed here so the same code draws all three modes.
+  const sem = stages.filter(s => s.lane === "sem");
+  const lex = stages.filter(s => s.lane === "lex");
+  const two = sem.length && lex.length;
+  const cells = [];
+  let col = 1, i = 0;
+  while (i < stages.length && stages[i].lane === "both") {
+    cells.push({ s: stages[i++], col: col++, row: 1, span: two });
+  }
+  if (two) {
+    const width = Math.max(sem.length, lex.length);
+    sem.forEach((s, j) => cells.push({ s, col: col + j, row: 1 }));
+    lex.forEach((s, j) => cells.push({ s, col: col + j, row: 2 }));
+    for (let j = sem.length; j < width; j++) cells.push({ wire: true, col: col + j, row: 1 });
+    for (let j = lex.length; j < width; j++) cells.push({ wire: true, col: col + j, row: 2 });
+    col += width;
+    i += sem.length + lex.length;
+  } else {
+    while (i < stages.length && stages[i].lane !== "both" && stages[i].lane !== "fuse") {
+      cells.push({ s: stages[i++], col: col++, row: 1 });
+    }
+  }
+  while (i < stages.length) cells.push({ s: stages[i++], col: col++, row: 1, span: two });
+
+  const d = $("diagram");
+  d.style.gridTemplateColumns = `repeat(${col - 1}, max-content)`;
+  d.innerHTML = cells.map(c => {
+    const pos = `grid-column:${c.col};grid-row:${c.row}`;
+    if (c.wire) return `<div class="wire" style="${pos}"></div>`;
+    const last = c.s === stages[stages.length - 1];
+    return `<div class="chip lane-${c.s.lane}${c.span ? " span2" : ""}${last ? " last" : ""}"
+                 id="chip-${c.s.key}" style="${c.span ? `grid-column:${c.col};grid-row:1 / span 2` : pos}">
+              <span class="ck">${esc(short(c.s.key))}</span><span class="cms"></span></div>`;
+  }).join("");
+}
+
+function short(key) {
+  return ({ intake: "intake", embed: "embed (bge-m3)", cosine: "cosine 458×1024",
+            lex_tfidf: "TF-IDF datasets", lex_attrs: "TF-IDF columns",
+            lex_merge: "merge slots", rrf: "RRF fusion", render: "render top k" })[key] || key;
+}
+
+function stageCard(e) {
+  const lane = laneOf(e.key);
+  const facts = Object.entries(e.facts || {}).map(([k, v]) =>
+    `<div class="fk">${esc(k)}</div><div class="fv">${esc(v)}</div>`).join("");
+  const tables = (e.tables || []).map(t => `
+    <div class="tt">${esc(t.title)}</div>
+    <div class="tw"><table>
+      <thead><tr>${t.columns.map((c, j) => `<th class="${numCol(t, j) ? "num" : ""}">${esc(c)}</th>`).join("")}</tr></thead>
+      <tbody>${t.rows.map(r => `<tr>${r.map((c, j) =>
+        `<td class="${numCol(t, j) ? "num" : ""}">${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody>
+    </table></div>${t.note ? `<div class="tn">${esc(t.note)}</div>` : ""}`).join("");
+  const notes = (e.notes || []).map(n => `<div class="note">${esc(n)}</div>`).join("");
+  return `<div class="stage${e.failed ? " failed" : ""}" id="st-${e.key}">
+    <div class="sh">
+      <span class="si mono">${e.i}</span>
+      <span class="sl">${esc(e.label)}</span>
+      <span class="lane lane-${lane}">${lane === "both" ? "shared" : lane === "fuse" ? "fusion" : lane === "sem" ? "semantic" : "lexical"}</span>
+      <span class="sms mono">${fmtMs(e.ms)}</span>
+    </div>
+    <div class="sbar"><i data-ms="${e.ms}"></i></div>
+    <div class="facts">${facts}</div>
+    ${tables}${notes}
+    ${e.failed ? `<div class="err">${esc(String(e.failed).split(/\r?\n/)[0])}</div>` : ""}
+  </div>`;
+}
+
+function numCol(t, j) {
+  return t.rows.length && t.rows.every(r => typeof r[j] === "number" || r[j] === "-");
+}
+
+function tick() {
+  if (!T || !T.running) return;
+  $("elapsed").textContent = Math.round(performance.now() - T.t0) + " ms";
+  requestAnimationFrame(tick);
+}
+
+function finish(total) {
+  T.running = false;
+  if (total != null) $("elapsed").textContent = total + " ms";
+  // Each stage's bar is its share of the wall-clock total, so the slow stage
+  // (usually the Ollama round trip) is visibly the slow stage.
+  const sum = [...document.querySelectorAll(".sbar i")].reduce((a, el) => a + +el.dataset.ms, 0) || 1;
+  document.querySelectorAll(".sbar i").forEach(el => el.style.width = (100 * el.dataset.ms / sum).toFixed(1) + "%");
+}
+
+function handle(ev) {
+  if (ev.ev === "plan") {
+    T.stages = ev.stages;
+    T.n = ev.stages.length;
+    ev.stages.forEach(s => T.lane[s.key] = s.lane);
+    buildDiagram(ev.stages);
+    $("cur").textContent = `0/${T.n} · starting`;
+    return;
+  }
+  if (ev.ev === "start") {
+    const c = $("chip-" + ev.key);
+    if (c) c.classList.add("active");
+    $("cur").textContent = `${ev.i}/${ev.n} · ${ev.label}`;
+    return;
+  }
+  if (ev.ev === "end") {
+    const c = $("chip-" + ev.key);
+    if (c) {
+      c.classList.remove("active");
+      c.classList.add(ev.failed ? "failed" : "done");
+      c.querySelector(".cms").textContent = fmtMs(ev.ms);
+    }
+    T.done += 1;
+    $("fill").style.width = (100 * T.done / (T.n || 1)) + "%";
+    if (ev.failed) $("fill").classList.add("failed");
+    $("stages").insertAdjacentHTML("beforeend", stageCard(ev));
+    return;
+  }
+  if (ev.ev === "done") {
+    $("fill").style.width = "100%";
+    $("cur").textContent = `${T.n}/${T.n} · complete`;
+    finish(ev.ms);
+    renderHits(ev);
+    return;
+  }
+  if (ev.ev === "error") {
+    $("fill").classList.add("failed");
+    $("cur").textContent = "failed";
+    finish(null);
+    showError(ev);
+  }
+}
+
+async function runTraced(q) {
+  const go = $("go");
+  go.disabled = true;
+  T = { t0: performance.now(), running: true, done: 0, n: 0, stages: [], lane: {} };
+  $("tracebox").classList.add("on");
+  $("rq").textContent = `“${q}” · ${mode}`;
+  $("diagram").innerHTML = "";
+  $("stages").innerHTML = "";
+  $("fill").style.width = "0";
+  $("fill").classList.remove("failed");
+  $("cur").textContent = "connecting…";
+  $("elapsed").textContent = "0 ms";
+  $("meta").textContent = "";
+  $("out").innerHTML = "";
+  requestAnimationFrame(tick);
+  try {
+    const r = await fetch(`/api/trace?q=${encodeURIComponent(q)}&mode=${mode}&k=10`);
+    if (!r.ok) { finish(null); return showError(await r.json()); }
+    // Server-sent-event framing read through fetch rather than EventSource:
+    // EventSource reconnects when the stream closes, which would re-run the
+    // search forever. A plain reader stops when the server does.
+    const reader = r.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf("\n\n")) >= 0) {
+        const frame = buf.slice(0, i); buf = buf.slice(i + 2);
+        for (const line of frame.split("\n"))
+          if (line.startsWith("data: ")) handle(JSON.parse(line.slice(6)));
+      }
+    }
+    if (T.running) { finish(null); $("cur").textContent = "stream ended early"; }
+  } catch (err) {
+    finish(null);
+    showError({ error: String(err) });
   } finally {
     go.disabled = false;
   }
 }
 
 fetch("/api/status").then(r => r.json()).then(d => {
-  document.getElementById("n").textContent = d.datasets;
+  $("n").textContent = d.datasets;
   if (!d.ollama || !d.model_pulled) {
-    document.getElementById("meta").innerHTML =
+    $("meta").innerHTML =
       `<span style="color:var(--warn)">Ollama not detected — semantic and
        hybrid need it. Lexical mode works now.</span>`;
   }

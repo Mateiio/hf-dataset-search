@@ -23,7 +23,9 @@ import numpy as np
 
 from hf_search import corpus, ollama
 from hf_search.lexical import Hit
-from hf_search.paths import EMBEDDING_IDS, EMBEDDINGS, EMBED_MODEL, ensure_data_dir
+from hf_search.paths import (EMBEDDING_IDS, EMBEDDINGS, EMBED_MODEL, OLLAMA_HOST,
+                             ensure_data_dir)
+from hf_search.trace import NULL
 
 
 @dataclass
@@ -60,25 +62,67 @@ class SemanticIndex:
         ids = json.loads(EMBEDDING_IDS.read_text(encoding="utf-8"))
         return cls(ids, V, records)
 
-    def embed_query(self, text: str) -> np.ndarray:
+    def embed_query(self, text: str, trace=NULL) -> np.ndarray:
         # Ollama returns HTTP 500 on some inputs (empty strings, occasional odd
         # encodings). A zero vector scores zero against everything, which is the
         # honest outcome for a query that could not be embedded -- better than
         # killing a benchmark run of 1,360 queries.
-        text = (text or "").strip()[:6000]
-        if not text:
-            return np.zeros(self.V.shape[1], dtype="float32")
-        try:
-            q = np.asarray(ollama.embed([text])[0], dtype="float32")
-        except ollama.OllamaUnavailable:
-            raise
-        except Exception:                             # noqa: BLE001
-            return np.zeros(self.V.shape[1], dtype="float32")
-        return q / (np.linalg.norm(q) or 1.0)
+        with trace.stage("embed", f"Embed query with {EMBED_MODEL} via Ollama") as st:
+            text = (text or "").strip()[:6000]
+            st.fact("endpoint", f"POST {OLLAMA_HOST}/api/embed")
+            st.fact("model", EMBED_MODEL)
+            st.fact("input characters", len(text))
+            if not text:
+                st.fact("result", "empty query -> zero vector")
+                return np.zeros(self.V.shape[1], dtype="float32")
+            t0 = time.perf_counter()
+            try:
+                q = np.asarray(ollama.embed([text])[0], dtype="float32")
+            except ollama.OllamaUnavailable:
+                raise
+            except Exception as e:                        # noqa: BLE001
+                st.fact("result", f"embedding failed ({str(e)[:80]}) -> zero vector")
+                st.note("A zero vector scores 0 against every dataset, so the "
+                        "semantic side contributes nothing to this search.")
+                return np.zeros(self.V.shape[1], dtype="float32")
+            st.fact("round trip to Ollama", f"{(time.perf_counter() - t0) * 1000:.0f} ms")
+            norm = float(np.linalg.norm(q))
+            st.fact("dimensions", int(q.shape[0]))
+            st.fact("L2 norm before unit-scaling", round(norm, 4))
+            st.fact("first 6 components",
+                    "  ".join(f"{x:+.3f}" for x in q[:6]) + "  ...")
+            st.note("The query is now a point on the same 1024-d unit sphere as "
+                    "the 458 dataset vectors. Cosine similarity is then a plain "
+                    "dot product.")
+            return q / (norm or 1.0)
 
-    def search(self, query: str, k: int = 20) -> list[Hit]:
-        q = self.embed_query(query)
-        sims = self.V @ q                             # cosine: both unit-norm
+    def _sims(self, q: np.ndarray, trace=NULL) -> np.ndarray:
+        """`V @ q` with a trace of what the ranking looks like."""
+        with trace.stage("cosine", "Cosine against dataset vectors") as st:
+            sims = self.V @ q                         # cosine: both unit-norm
+            if trace.on:
+                order = np.argsort(-sims)
+                st.fact("matrix", f"{self.V.shape[0]} x {self.V.shape[1]} float32")
+                st.fact("operation", "one matrix-vector product, no index")
+                st.fact("best / median / worst cosine",
+                        f"{sims[order[0]]:.4f} / {np.median(sims):.4f} / "
+                        f"{sims[order[-1]]:.4f}")
+                gap = float(sims[order[0]] - sims[order[1]]) if len(order) > 1 else 0.0
+                st.fact("gap between #1 and #2", f"{gap:.4f}")
+                st.table("Top cosines", ["rank", "dataset", "title", "cosine"],
+                         [[r + 1, self.ids[i],
+                           (self.by_id[self.ids[i]].title[:60]
+                            if self.ids[i] in self.by_id else ""),
+                           round(float(sims[i]), 4)]
+                          for r, i in enumerate(order[:8])],
+                         "Dense scores cluster tightly; a small gap at the top "
+                         "means the model saw several datasets as similarly "
+                         "plausible.")
+            return sims
+
+    def search(self, query: str, k: int = 20, trace=NULL) -> list[Hit]:
+        q = self.embed_query(query, trace=trace)
+        sims = self._sims(q, trace=trace)
         out = []
         for i in np.argsort(-sims)[:k]:
             d = self.ids[i]
