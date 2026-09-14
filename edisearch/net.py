@@ -27,11 +27,15 @@ def _throttle(host: str) -> None:
 
 
 def get(url: str, headers: dict | None = None, timeout: int = 120,
-        retries: int = 3) -> tuple[int, bytes, str]:
-    """(status, body, final_url). Status 0 means no HTTP answer; body is the error."""
+        retries: int = 3, data: bytes | None = None) -> tuple[int, bytes, str]:
+    """(status, body, final_url). Status 0 means no HTTP answer; body is the error.
+
+    With `data` it is a POST. Headers are never logged here or anywhere else in
+    this package: the PASTA+ client puts a credential in one.
+    """
     host = urllib.parse.urlsplit(url).netloc
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT,
-                                               **(headers or {})})
+    req = urllib.request.Request(url, data=data,
+                                 headers={"User-Agent": USER_AGENT, **(headers or {})})
     for attempt in range(retries):
         _throttle(host)
         try:
