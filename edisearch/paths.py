@@ -19,6 +19,8 @@ DOCS = ROOT / "docs"
 PROBE = DATA / "probe"                   # M0 listings, regenerable, not shipped
 RAW = DATA / "raw"                       # M1+ raw EML by scope, not shipped
 RECORDS = DATA / "records.jsonl"         # parsed EDI corpus, one JSON per line
+EVALSET = DATA / "evalset"               # citation links, full text cache, probes
+FULLTEXT = EVALSET / "fulltext"          # one folder per citing DOI, not shipped
 
 USER_AGENT = ("hf-dataset-search/edisearch (research metadata index; "
               "https://github.com/Mateiio/hf-dataset-search)")

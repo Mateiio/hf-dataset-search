@@ -36,55 +36,21 @@ from __future__ import annotations
 
 import json
 import re
-import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from typing import Iterator
 
-from edisearch.paths import USER_AGENT
+from edisearch import net
 
 CN = "https://cn.dataone.org/cn/v2"
-THROTTLE_S = 0.5
 EML_FORMATS = "formatId:*eml*"
 
 # Fields worth carrying out of the index for every EML document.
 DOC_FIELDS = "id,formatId,datasource,obsoletedBy,obsoletes,dateUploaded,size"
 
-_last_request = 0.0
-
-
-def _throttle() -> None:
-    global _last_request
-    wait = THROTTLE_S - (time.monotonic() - _last_request)
-    if wait > 0:
-        time.sleep(wait)
-    _last_request = time.monotonic()
-
-
 def _get(url: str, timeout: int = 120, retries: int = 3) -> tuple[int, bytes]:
-    """One GET, throttled, with a short retry on transient failure.
-
-    Returns (status, body). A status of 0 means the request never got an HTTP
-    answer; the body then holds the error text.
-    """
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    for attempt in range(retries):
-        _throttle()
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as r:
-                return r.status, r.read()
-        except urllib.error.HTTPError as e:
-            if e.code in (429, 500, 502, 503, 504) and attempt < retries - 1:
-                time.sleep(2 ** attempt)
-                continue
-            return e.code, e.read() if e.fp else b""
-        except (urllib.error.URLError, TimeoutError) as e:
-            if attempt < retries - 1:
-                time.sleep(2 ** attempt)
-                continue
-            return 0, str(e).encode()
-    return 0, b"unreachable"
+    """One throttled GET; see `edisearch.net`. Returns (status, body)."""
+    code, body, _ = net.get(url, timeout=timeout, retries=retries)
+    return code, body
 
 
 # ---------------------------------------------------------------- Solr search

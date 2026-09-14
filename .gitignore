@@ -17,3 +17,5 @@ data/eml/
 # and the harvester, not committed. records.jsonl ships once M1 produces it.
 data/probe/
 data/raw/
+data/evalset/fulltext/
+data/evalset/datasets/

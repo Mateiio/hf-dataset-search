@@ -1,0 +1,14 @@
+{
+ "doi": "10.6073/pasta/7ef2de3865062d7352f7b20753ecd39b",
+ "title": "Plant aboveground biomass data: Biodiversity II: Effects of Plant Biodiversity on Population and Ecosystem Processes",
+ "package_id": "knb-lter-cdr.273.10",
+ "scope": "knb-lter-cdr",
+ "identifier": 273,
+ "revision": 10,
+ "creators": [
+  "Tilman, David"
+ ],
+ "year": 2021,
+ "abstract": "Biodiversity II (E120) is designed to determine how the number of plant species affects the dynamics of ecological processes at the population, community, and ecosystem levels. By experimentally manipulating the number of species and the kinds of species, the amount of plant growth and the change from year to year, that result can be examined. Plots are large (9m x 9m actively maintained) and well-replicated, allowing responses of plant pathogens, insect herbivores, seed predators, soil parameters, invasive plant species and other variables to also be studied. Plots were seeded in May 1994 to have 1, 2, 4, 8, or 16 species, with roughly 30 replicates of each diversity level. The species composition of each plot was chosen by random draw from a pool of 18 grassland perennials that included four warm-season (C4) grasses, four cool-season (C3) grasses, four legumes, four non-legume forbs, and two woody species. All species occur in monoculture allowing comparison of responses of each species in monoculture to combinations of these same species. The experiment was established in 1994 by the lead investigators David Tilman, Peter Reich, Johannes Knops, and David Wedin. Experiment 120 is similar to Experiment 123, but it uses larger plots to provide a large capacity for long-term subexperiments.",
+ "citation_count": 1
+}
