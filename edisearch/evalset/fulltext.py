@@ -169,12 +169,13 @@ def _jats_text(xml: str) -> tuple[str, int]:
     return main + "\n" + refs, len(main) + 1
 
 
-# A heading on its own line; pypdf may leave a line number ("References 382")
-# or a qualifier ("LTER Data References") on it. The earliest such heading in
-# the last two thirds of the paper starts the reference list.
+# A heading on its own line; pypdf may leave a line number ("References 382",
+# even "References315" with no space) or a qualifier ("LTER Data References")
+# on it. The earliest such heading in the last two thirds of the paper starts
+# the reference list.
 _REFS_HEADING = re.compile(
     r"^[^\n]{0,20}\b(References?|Literature Cited|Bibliography|Works Cited|"
-    r"REFERENCES?|LITERATURE CITED)\b[ \d]{0,8}$", re.M)
+    r"REFERENCES?|LITERATURE CITED)\d{0,4}[ \d]{0,8}$", re.M)
 
 
 def _pdf_text(data: bytes) -> tuple[str, int]:

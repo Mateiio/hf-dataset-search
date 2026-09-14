@@ -56,6 +56,49 @@ _YEAR = re.compile(r"\b((?:19|20)\d{2})([a-z]?)\b")
 KIND_RANK = {"doi": 0, "package_id": 1, "title": 2, "marker": 3,
              "author_year": 4, "generic": 5}
 
+# A data-availability section lists datasets as full citations, which is
+# bibliography by another name: a hit there proves the citation but is not a
+# query sentence. Such a section runs from its heading to the next heading
+# or the reference list, capped, so a paper's entire discussion is never
+# swallowed by a misread.
+_DA_HEADING = re.compile(
+    r"(?im)^[^\n]{0,20}\b(Data (?:and code |and software )?availability(?: statement)?|"
+    r"Code and data availability|Data accessibility(?: statement)?|"
+    r"Availability of data(?: and materials)?)\b[^\n]{0,30}$")
+_DA_MAX = 20000
+_BACK_MATTER = re.compile(
+    r"(?im)^[^\n]{0,6}(Author contributions?|Competing interests?|Acknowledge?ments?|"
+    r"Financial support|Review statement|Supplement|Code availability|Sample availability|"
+    r"Video supplement|Conflicts? of interest|Funding|Disclaimer|Appendix [A-Z]?)\b[^\n]{0,30}$")
+
+
+def bibliography_spans(text: str, reflist_start: int) -> list[tuple[int, int]]:
+    """Character spans that are bibliography-like: the reference list plus any
+    data-availability section."""
+    spans = []
+    if reflist_start >= 0:
+        spans.append((reflist_start, len(text)))
+    for m in _DA_HEADING.finditer(text):
+        start = m.start()
+        end = min(len(text), start + _DA_MAX)
+        for rx in (_HEADING_LINE_ANY, _BACK_MATTER):
+            nxt = rx.search(text, m.end() + 1)
+            if nxt and nxt.start() < end:
+                end = nxt.start()
+        if reflist_start >= 0 and start < reflist_start < end:
+            end = reflist_start
+        spans.append((start, end))
+    return spans
+
+
+# A numbered section heading: one or two digits per level, so a wrapped line
+# that starts with a year ("2008 Anaktuvuk River fire ...") is not one.
+_HEADING_LINE_ANY = re.compile(r"(?m)^\d{1,2}(?:\.\d{1,2})*\s+[A-Z][^\n.!?]{0,70}$")
+
+
+def in_spans(pos: int, spans: list[tuple[int, int]]) -> bool:
+    return any(a <= pos < b for a, b in spans)
+
 
 # A line that is a heading or a running header rather than prose: short, no
 # sentence punctuation, optionally numbered ("2.1 Field site and data",
@@ -151,30 +194,35 @@ def _author_year_pattern(surname: str, year: str) -> re.Pattern:
 
 # ------------------------------------------------------- reference entries
 
-def entry_label(text: str, reflist_start: int, hit_pos: int) -> dict | None:
-    """The label of the reference entry containing `hit_pos`.
+def entry_label(text: str, span_start: int, hit_pos: int) -> dict | None:
+    """The label of the bibliography entry containing `hit_pos`.
 
-    Looks back from the hit to the nearest entry start. Numbered styles give
+    `span_start` is where the reference list or data-availability section
+    begins. Looks back from the hit to the nearest entry start. Numbered styles give
     {"style": "number", "n": 37}; author-year styles give
     {"style": "author", "surname": "Campbell", "year": "2019"}.
     """
-    if reflist_start < 0 or hit_pos < reflist_start:
+    if span_start < 0 or hit_pos < span_start:
         return None
-    window = text[reflist_start:hit_pos]
+    window = text[span_start:hit_pos]
     nums = list(_NUM_ENTRY.finditer(window))
     auths = list(_AUTHOR_ENTRY.finditer(window))
     last_num = nums[-1] if nums else None
     last_auth = auths[-1] if auths else None
     if last_num and (not last_auth or last_num.start() >= last_auth.start()):
-        entry = text[reflist_start + last_num.start(): hit_pos + 200]
+        entry = text[span_start + last_num.start(): hit_pos + 200]
         return {"style": "number", "n": int(last_num.group(1)),
                 "entry": entry.split("\n")[0][:200]}
     if last_auth:
-        entry_start = reflist_start + last_auth.start()
+        entry_start = span_start + last_auth.start()
         entry = text[entry_start: hit_pos + 200].split("\n")[0]
-        y = _YEAR.search(entry)
+        ys = [a + b for a, b in _YEAR.findall(entry)]
+        # APA puts the year after the authors, Copernicus and many others put
+        # it last; a dataset title in between often carries its own years.
+        # Keep both ends and let the marker search try each.
+        years = list(dict.fromkeys([ys[0], ys[-1]])) if ys else []
         return {"style": "author", "surname": last_auth.group(1).split()[-1],
-                "year": (y.group(1) + y.group(2)) if y else None,
+                "year": years[0] if years else None, "years": years,
                 "entry": entry[:200]}
     return None
 
@@ -198,8 +246,11 @@ def _in_range(match_text: str, n: int) -> bool:
 def marker_pattern(label: dict) -> re.Pattern | None:
     if label["style"] == "number":
         return _number_marker_pattern(label["n"])
-    if label["style"] == "author" and label.get("year"):
-        return _author_year_pattern(label["surname"], label["year"].rstrip("abc"))
+    years = label.get("years") or ([label["year"]] if label.get("year") else [])
+    if label["style"] == "author" and years:
+        alt = "|".join(re.escape(y.rstrip("abc")) for y in years)
+        s = re.escape(label["surname"])
+        return re.compile(rf"\b{s}\b[^.;()\n]{{0,40}}?\(?\b(?:{alt})[a-z]?\b")
     return None
 
 
@@ -209,6 +260,7 @@ def find(text: str, ds: dict, max_per_kind: int = 3,
          reflist_start: int = -1) -> list[dict]:
     """Sentences naming the dataset, strongest kind first, deduplicated."""
     sents = sentences(text)
+    biblio = bibliography_spans(text, reflist_start)
     norm_chars, back = [], []
     for i, ch in enumerate(text):
         c = ch.lower() if ch.isalnum() else " "
@@ -236,7 +288,7 @@ def find(text: str, ds: dict, max_per_kind: int = 3,
                     if s0 - p0 < 400:
                         s0, s = p0, (ps + " " + s).strip()
                 h = {"kind": kind, "char_start": s0, "char_end": s1,
-                     "in_reference_list": reflist_start >= 0 and s0 >= reflist_start,
+                     "in_reference_list": in_spans(s0, biblio),
                      "sentence": s}
                 if extra:
                     h.update(extra)
@@ -268,17 +320,21 @@ def find(text: str, ds: dict, max_per_kind: int = 3,
     # the body. One label per distinct entry; markers ranked by position.
     labels: dict[str, dict] = {}
     for pos in direct_positions:
-        lab = entry_label(text, reflist_start, pos)
+        span = next(((a, b) for a, b in biblio if a <= pos < b), None)
+        lab = entry_label(text, span[0], pos) if span else None
         if lab:
             key = f"{lab['style']}:{lab.get('n') or lab.get('surname')}:{lab.get('year')}"
             labels.setdefault(key, lab)
     body_end = reflist_start if reflist_start >= 0 else len(text)
+    da_spans = [(a, b) for a, b in biblio if a != reflist_start]
     for lab in labels.values():
         rx = marker_pattern(lab)
         if not rx:
             continue
         n = 0
         for m in rx.finditer(text, 0, body_end):
+            if in_spans(m.start(), da_spans):
+                continue
             if lab["style"] == "number" and not _in_range(m.group(0), lab["n"]):
                 continue
             if add("marker", m.start(), {"ref_label": lab["n"] if lab["style"] == "number"
