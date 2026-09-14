@@ -29,6 +29,8 @@ By link source (a pair can be in both): `is-cited-by` none 23, doi 8, author_yea
 
 ## Every pair, for reading
 
+**Verdicts so far:** 10 of 50 judged: use-only 5, usable 3, skip 2. Yield 3/10 of judged pairs, 3/50 of sampled links. Pre-screened by the coding agent, confirmed by the owner; verdicts live in `data/evalset/verdicts.json` and survive a regenerated report.
+
 Read the sentence(s). Mark **usable** if a person who had never seen the dataset could tell from the sentence roughly what it contains; **use-only** if it says what the paper did with it but not what it is; **vague** if neither. Write the verdict in the last column and the yield is the count. A hit marked *reference list* is the bibliography entry, which proves the citation but is not a query; judge the *body* hits, and where there are none the body sentence has still to be found (M3's marker resolution).
 
 ### 1. `knb-lter-cdr.273.10` cited by `10.1111/ele.14262`
@@ -100,9 +102,9 @@ Read the sentence(s). Mark **usable** if a person who had never seen the dataset
 - **Paper:** Revisiting talus and free-air temperatures after 50 years of change at an American pika (Ochotona princeps) study site in the Southern Rockies — *PLOS Climate*, 2022, OA gold; cites 5 EDI dataset(s); link source is-cited-by/datacite-crossref
 - **Text:** pdf, 69,414 chars
 - **doi**, body [8486–8931]: Data used in analyses of surroundi ng sites can be found in the EDI Portal at the following DOI’s: https://doi.o rg/10. 6073/pasta/6 b8288f9498b 00cf4f2156a3f efc1b72; https://do i.org/10.6073/pa sta/1b62f2cd a71579c48 70ac5c1af71 e6f3; https:// doi.org/10.6073 /pasta/ edd9e457fd2 2a703a587c c8608d54bde; https:// doi.org/10.60 73/pasta/1e9 f40409e69 299b1a4 1f98ac767bc d7; https://doi.org/10 .6073/pasta / 0a786c99fe 3d4e1dfb8 c57424ce79 091. ← **query candidate**
-- **marker** via ref 51, body [26425–26628]: Dataset and regulatory information Data from weather stations C1 and D1, including the daily maximum and minimum temperatures, were provided by the Niwot Ridge Long-Term Ecological Research site [49–52].
+- **marker** via ref 51, body [26460–26628]: Data from weather stations C1 and D1, including the daily maximum and minimum temperatures, were provided by the Niwot Ridge Long-Term Ecological Research site [49–52].
 - **doi**, reference list [64763–64851]: Available from: https://doi.or g/10. 6073/pas ta/edd9e457f d22a703a587 cc8608d54 bde 52.
-- **Verdict:** 
+- **Verdict:** use-only data availability list, paper cites 5 EDI datasets
 
 ### 10. `edi.181.1` cited by `10.1111/cobi.12049`
 
@@ -157,7 +159,7 @@ Read the sentence(s). Mark **usable** if a person who had never seen the dataset
 - **Text:** pdf, 69,899 chars
 - **doi**, body [57459–57608]: Environmental Data Initiative. https://doi.org/10.6073/pasta/a5a4d4154e0a8181a5523b4d9c49ed99 364 https://doi.org/10.5194/essd-2023-222 Preprint. ← **query candidate**
 - **title**, body [57321–57457]: Measurements of Leaf area, foliar C and N for 14 sites along a transect down the Kuparuk River basin, summer 1997, North Slope, Alaska.
-- **Verdict:** 
+- **Verdict:** skip bibliography entry misread as body (Copernicus preprint)
 
 ### 17. `knb-lter-jrn.210013003.17` cited by `10.1002/ecy.70384`
 
@@ -238,11 +240,12 @@ Read the sentence(s). Mark **usable** if a person who had never seen the dataset
 - **Dataset:** Water isotope samples from Watershed 3 at Hubbard Brook Experimental Forest, 2006-2010 (2019)
 - **Paper:** Seasonal partitioning of precipitation between streamflow and evapotranspiration, inferred from end-member splitting analysis — *Hydrology and earth system sciences*, 2020, OA gold; cites 3 EDI dataset(s); link source is-cited-by/datacite-crossref
 - **Text:** pdf, 116,278 chars
-- **author_year**, body [12637–12928]: Allen: Seasonal partitioning of precipitation 2 Proof-of-concept application 2.1 Field site and data As a proof-of-concept demonstration, here we apply endmember splitting analysis to Campbell and Green’s (2019) measurements of δ18O and δ2H at Hubbard Brook Experimental Forest, Watershed 3. ← **query candidate**
+- **author_year**, body [12738–12928]: As a proof-of-concept demonstration, here we apply endmember splitting analysis to Campbell and Green’s (2019) measurements of δ18O and δ2H at Hubbard Brook Experimental Forest, Watershed 3. ← **query candidate**
 - **author_year**, body [12929–13235]: Campbell and Green (2019) measuredδ18O andδ2H in time-integrated bulk precipitation samples, and instantaneous streamwater grab samples, taken at Watershed 3 approximately every 2 weeks between October 2006 and June 2010 (Fig. 2); the isotope sampling and analysis procedures are documented in Green et al.
 - **author_year**, body [18892–19102]: (a) Time series of daily water ﬂuxes and biweekly deuterium values in streamwater (dark blue) and precipitation (light blue) at Watershed 3, Hubbard Brook Experimental Forest (data of Campbell and Green, 2019).
-- **doi**, reference list [109701–109862]: B.: Water isotope samples from Watershed 3 at Hubbard Brook Experimental Forest, 2006–2010, https://doi.org/10.6073/pasta/f5740876b68ec42b695c39d8ad790cee, 2019.
-- **Verdict:** 
+- **doi**, reference list [109732–109862]: Watershed 3 at Hubbard Brook Experimental Forest, 2006–2010, https://doi.org/10.6073/pasta/f5740876b68ec42b695c39d8ad790cee, 2019.
+- **title**, reference list [109684–109731]: L. and Green, M. B.: Water isotope samples from
+- **Verdict:** usable
 
 ### 28. `edi.202.8` cited by `10.1002/essoar.10510558.1`
 
@@ -276,7 +279,7 @@ Read the sentence(s). Mark **usable** if a person who had never seen the dataset
 - **marker** via ref 49, body [32125–32448]: Coral community structure on the fore reef is quantified using photoquadrats (0.25 m 2 ) taken at 40 fixed locations located along a 50 m long transect placed along the 10 m isobath at each of six sites; photoquadrat positions were randomly selected in 2005, but thereafter the same locations have been recorded [49],[50] . ← **query candidate**
 - **marker** via ref 49, body [43710–43853]: Data for this study are available on the website of the Moorea Coral Reef Long Term Ecological Project: http://mcr.lternet.edu/data [49],[51] .
 - **doi**, reference list [52880–53052]: MCR LTER: Coral Reef: Long-term Population and Community Dynamics: Corals, ongoing since 2005. knb-lter-mcr.4.33 10.6073/pasta/1f05f1f52a2759dc096da9c24e88b1e8 (2015). 50.
-- **Verdict:** 
+- **Verdict:** usable
 
 ### 32. `edi.1811.1` cited by `10.1073/pnas.2502289122`
 
@@ -290,15 +293,15 @@ Read the sentence(s). Mark **usable** if a person who had never seen the dataset
 - **marker** via ref 37, body [25323–25464]: The data are available at the Environmental Data Initiative ([37]), including a full description of each site and its associated data source.
 - **marker** via ref 37, body [39121–39410]: Associated Data Supplementary Materials Appendix 01 (PDF) Code S01 (R) Data Availability Statement All chlorophyll a time series data used in this study have been deposited at the Environmental Data Initiative ( https://doi.org/10.6073/pasta/dd706bbd8bae2386517d3bf20be02396 ) ([37]).
 - **title**, reference list [46207–46335]: Cloern J., Jassby A., “Multidecadal Time Series of Measured Chlorophyll-a in Lakes and Estuarine-Coastal Ecosystems, 1966-2024”.
-- **Verdict:** 
+- **Verdict:** use-only deposited-at statement
 
 ### 33. `edi.911.1` cited by `10.21203/rs.3.rs-859794/v1`
 
 - **Dataset:** First-order vertebrated mortality due the 2020 wildfires in the Pantanal wetland, Brazil (2021)
 - **Paper:** Counting the Dead: 17 Million Vertebrates Directly Killed by the 2020’s Wildfires in the Pantanal Wetland, Brazil — *Research Square*, 2021, OA green; cites 1 EDI dataset(s); link source is-cited-by/datacite-crossref
 - **Text:** pdf, 40,709 chars
-- **doi**, body [26861–27044]: Page 11/16 Declarations Data availability - the data used to conduct the analysis is available at https://doi.org/10.6073/pasta/1688bdf9c001c89972d2cb53d242c4ef (Accessed 2021-08-02). ← **query candidate**
-- **Verdict:** 
+- **doi**, body [26885–27044]: Data availability - the data used to conduct the analysis is available at https://doi.org/10.6073/pasta/1688bdf9c001c89972d2cb53d242c4ef (Accessed 2021-08-02). ← **query candidate**
+- **Verdict:** use-only data availability statement
 
 ### 34. `edi.140.1` cited by `10.15468/dl.roahuy`
 
@@ -367,9 +370,9 @@ Read the sentence(s). Mark **usable** if a person who had never seen the dataset
 - **Dataset:** Meteorological data from benchmark stations at the Andrews Experimental Forest, 1957 to present (2016)
 - **Paper:** The sensitivity of modeled snow accumulation and melt to precipitation phase methods across a climatic gradient — *Hydrology and earth system sciences*, 2019, OA gold; cites 3 EDI dataset(s); link source is-cited-by/datacite-crossref
 - **Text:** pdf, 102,944 chars
-- **doi**, body [72018–72829]: Andrews LTER: https://doi.org/10.6073/pasta/ c96875918bb9c86d330a457bf4295cd9 (McKee, 2015) and http://andlter.forestry.oregonstate.edu/data/ (last access: 16 July 2019) (for sub-daily data), – Southern Sierra CZO: http://criticalzone.org/sierra/data/ dataset/2529/ (last access: 9 September 2019, Husaker, 2011a) and http://criticalzone.org/sierra/data/dataset/2406/ (last access: 9 September 2019, Husaker, 2011b), – Johnston Draw (Reynolds Creek CZO): https://doi.org/10.15482/USDA.ADC/1402076 (Godsey et al., 2016, 2018), – Yosemite Dana Meadows: http://hdl.handle.net/1773/35957 (Lundquist et al ← **query candidate**
+- **doi**, body [72018–72173]: Andrews LTER: https://doi.org/10.6073/pasta/ c96875918bb9c86d330a457bf4295cd9 (McKee, 2015) and http://andlter.forestry.oregonstate.edu/data/ (last access: ← **query candidate**
 - **doi**, reference list [91664–91866]: A.: Meteorological data from benchmark stations at the Andrews Experimental Forest, 1957 to present, Environmental Data Initiative, https://doi.org/10.6073/pasta/ c96875918bb9c86d330a457bf4295cd9, 2015.
-- **Verdict:** 
+- **Verdict:** use-only data availability list
 
 ### 43. `edi.633.1` cited by `10.1080/20442041.2020.1805261`
 
@@ -385,7 +388,7 @@ Read the sentence(s). Mark **usable** if a person who had never seen the dataset
 - **Paper:** Resistance and resilience of stream metabolism to high flow disturbances — *?*, 2020, OA gold; cites 1 EDI dataset(s); link source is-cited-by/datacite-crossref
 - **Text:** pdf, 66,396 chars
 - **doi**, body [41986–42356]: Hession, W., Lehmann, L., Wind, L., and Lofton, M.: High-frequency time series of stage height, stream discharge, and water quality (speciﬁc conductivity, dissolved oxygen, pH, temperature, turbidity) for Stroubles Creek in Blacksburg, Virginia, USA 2013-2018 ver 1,365 Environmental Data Initiative, https://doi.org/10.6073/pasta/42727d38837cb4bdf04ce4e0d158ea92, 2020. ← **query candidate**
-- **Verdict:** 
+- **Verdict:** skip bibliography entry, the dataset's own title
 
 ### 45. `knb-lter-gce.697.6` cited by `10.1111/nph.16371`
 
@@ -421,17 +424,18 @@ Read the sentence(s). Mark **usable** if a person who had never seen the dataset
 - **doi**, reference list [41661–41756]: Environmental Data Initiative. https://doi.org/10.6073/pasta/ab7c87401f08db2e682b428e524fec03.
 - **title**, reference list [41529–41660]: PIE LTER predation and herbivory rates associated with marsh sites used in space for time sea-level rise study, Rowley, MA. ver 1.
 - **author_year**, reference list [51561–51624]: Bars represent standard error. Data from: Byrnes 2019 and 2021.
-- **Verdict:** 
+- **Verdict:** usable
 
 ### 49. `edi.306.2` cited by `10.1002/ecs2.4208`
 
 - **Dataset:** American Residential Macrosystems - Soil chemistry data within residential yards in six major metropolitan areas, 2012-2013 (2019)
 - **Paper:** Ecological homogenization of soil properties in the American residential macrosystem — *Ecosphere*, 2022, OA gold; cites 1 EDI dataset(s); link source references/crossref, is-cited-by/datacite-crossref
 - **Text:** pdf, 73,697 chars
-- **doi**, body [51787–51924]: DATA AVAILABILITY STATEMENT Data are available from the EDI Data Portal: https://doi. org/10.6073/pasta/5683662180499904732e654e3869f3e6. ← **query candidate**
-- **author_year**, body [18960–19105]: Statistical analysis The data used in this paper are publicly available via the Environmental Data Initiative (EDI) Data Portal (Groffman, 2019).
-- **doi**, reference list [56473–56705]: “American Residential Macrosystems — Soil Chemistry Data within Residential Yards in Six Major Metropolitan Areas, 2012–2013 Version 2.” Environmental Data Initiative. https://doi.org/10.6073/pasta/5683662180499904732e65 4e3869f3e6.
-- **Verdict:** 
+- **doi**, body [51815–51924]: Data are available from the EDI Data Portal: https://doi. org/10.6073/pasta/5683662180499904732e654e3869f3e6. ← **query candidate**
+- **author_year**, body [18981–19105]: The data used in this paper are publicly available via the Environmental Data Initiative (EDI) Data Portal (Groffman, 2019).
+- **doi**, reference list [56568–56705]: Metropolitan Areas, 2012–2013 Version 2.” Environmental Data Initiative. https://doi.org/10.6073/pasta/5683662180499904732e65 4e3869f3e6.
+- **title**, reference list [56454–56514]: Groffman, P. 2019. “American Residential Macrosystems — Soil
+- **Verdict:** use-only data availability statement
 
 ### 50. `knb-lter-hbr.406.1` cited by `10.1007/s10021-025-00965-w`
 

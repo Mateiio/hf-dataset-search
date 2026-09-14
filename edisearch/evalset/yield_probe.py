@@ -145,6 +145,8 @@ def run(n: int, seed: int, force: bool) -> list[dict]:
 
 def report(results: list[dict], pool: int, seed: int) -> Path:
     n = len(results)
+    verdicts_path = EVALSET / "verdicts.json"
+    verdicts = json.loads(verdicts_path.read_text(encoding="utf-8")) if verdicts_path.exists() else {}
     routes = Counter(r["outcome"] for r in results)
     kinds = Counter(r["best_kind"] or ("no-mention" if r["route"] else r["outcome"])
                     for r in results)
@@ -206,6 +208,16 @@ def report(results: list[dict], pool: int, seed: int) -> Path:
     w("")
     w("## Every pair, for reading")
     w("")
+    judged = sum(1 for r in results if f"{r['dataset_doi']}|{r['citing_doi']}" in verdicts)
+    if judged:
+        c = Counter(verdicts[f"{r['dataset_doi']}|{r['citing_doi']}"]["verdict"] for r in results
+                    if f"{r['dataset_doi']}|{r['citing_doi']}" in verdicts)
+        w(f"**Verdicts so far:** {judged} of {n} judged: " +
+          ", ".join(f"{k} {v}" for k, v in c.most_common()) +
+          f". Yield {c['usable']}/{judged} of judged pairs, {c['usable']}/{n} of sampled links. "
+          "Pre-screened by the coding agent, confirmed by the owner; verdicts live in "
+          "`data/evalset/verdicts.json` and survive a regenerated report.")
+        w("")
     w("Read the sentence(s). Mark **usable** if a person who had never seen the "
       "dataset could tell from the sentence roughly what it contains; **use-only** "
       "if it says what the paper did with it but not what it is; **vague** if "
@@ -238,7 +250,8 @@ def report(results: list[dict], pool: int, seed: int) -> Path:
                 via = f" via ref {h['ref_label']}" if h.get("ref_label") else ""
                 w(f"- **{h['kind']}**{via}, {where} [{h['char_start']}–{h['char_end']}]: "
                   f"{h['sentence'][:600]}{tag}")
-        w("- **Verdict:** ")
+        v = verdicts.get(f"{r['dataset_doi']}|{r['citing_doi']}")
+        w("- **Verdict:** " + (f"{v['verdict']} {v.get('note', '')}".strip() if v else ""))
         w("")
     REPORT.write_text("\n".join(L), encoding="utf-8")
     return REPORT

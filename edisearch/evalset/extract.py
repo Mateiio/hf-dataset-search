@@ -57,22 +57,51 @@ KIND_RANK = {"doi": 0, "package_id": 1, "title": 2, "marker": 3,
              "author_year": 4, "generic": 5}
 
 
+# A line that is a heading or a running header rather than prose: short, no
+# sentence punctuation, optionally numbered ("2.1 Field site and data",
+# "REFERENCES", "Allen: Seasonal partitioning of precipitation"). Such a line
+# is its own segment so it never glues onto the sentence after it.
+_HEADING_LINE = re.compile(
+    r"^(?:\d+(?:\.\d+)*\s+)?[A-Z][^\n.!?]{0,70}$")
+
+
 def sentences(text: str) -> list[tuple[int, int, str]]:
     """(start, end, sentence) over the whole text.
 
-    Boundaries come from punctuation only. PDF text breaks every line, so a
-    newline is a space here, not a boundary; JATS text has one paragraph per
-    line and a paragraph's last sentence has its full stop, so the two rarely
-    merge. Offsets are into the original text: the flattening keeps length.
+    Boundaries come from punctuation, and from heading-like lines. PDF text
+    breaks every line, so an ordinary newline is a space here, not a
+    boundary; JATS text has one paragraph per line and a paragraph's last
+    sentence has its full stop, so the two rarely merge. Offsets are into the
+    original text.
     """
-    flat = text.replace("\n", " ")
     out = []
-    start = 0
-    for s in _SENT.split(flat):
-        if s.strip():
-            i = flat.index(s, start)
-            out.append((i, i + len(s), " ".join(s.split())))
-            start = i + len(s)
+    block_start, block_lines = 0, []
+
+    def flush(end):
+        if not block_lines:
+            return
+        flat = "\n".join(block_lines).replace("\n", " ")
+        start = 0
+        for s in _SENT.split(flat):
+            if s.strip():
+                i = flat.index(s, start)
+                out.append((block_start + i, block_start + i + len(s), " ".join(s.split())))
+                start = i + len(s)
+
+    pos = 0
+    for line in text.split("\n"):
+        if _HEADING_LINE.match(line) and len(line.split()) <= 10:
+            flush(pos)
+            block_lines = []
+            if line.strip():
+                out.append((pos, pos + len(line), line.strip()))
+            block_start = pos + len(line) + 1
+        else:
+            if not block_lines:
+                block_start = pos
+            block_lines.append(line)
+        pos += len(line) + 1
+    flush(pos)
     return out
 
 
