@@ -54,12 +54,23 @@ def load_links(force: bool = False) -> list[dict]:
 
 
 def sample(rows: list[dict], n: int, seed: int) -> list[dict]:
+    """The first n of a fixed random order of the pool.
+
+    Prefix-stable: `--n 300` extends the 50 already read rather than drawing
+    a fresh 50. The first 50 are exactly the draw the first probe made
+    (`Random(seed).sample(rows, 50)`); the rest is the remainder shuffled
+    with the same seed.
+    """
     key = {"n": n, "seed": seed, "pool": len(rows)}
     if SAMPLE.exists():
         s = json.loads(SAMPLE.read_text(encoding="utf-8"))
         if s["key"] == key:
             return s["rows"]
-    picked = random.Random(seed).sample(rows, n)
+    first = random.Random(seed).sample(rows, min(50, n, len(rows)))
+    taken = {(r["dataset_doi"], r["citing_doi"]) for r in first}
+    rest = [r for r in rows if (r["dataset_doi"], r["citing_doi"]) not in taken]
+    random.Random(seed).shuffle(rest)
+    picked = (first + rest)[:n]
     SAMPLE.write_text(json.dumps({"key": key, "rows": picked}, indent=1), encoding="utf-8")
     return picked
 
@@ -123,6 +134,7 @@ def run(n: int, seed: int, force: bool) -> list[dict]:
             "hits": hits,
             "best_kind": hits[0]["kind"] if hits else None,
             "body_hit": any(not h["in_reference_list"] for h in hits),
+            "query_candidate": extract.best_query(hits),
         })
         print(f"  {i:3d} {link['citing_doi'][:32]:32s} {meta.get('outcome') or '-':12s} "
               f"{(hits[0]['kind'] if hits else '-'):12s} {ds.get('package_id')}")
@@ -140,9 +152,11 @@ def report(results: list[dict], pool: int, seed: int) -> Path:
     for r in results:
         for s in r["sources"]:
             by_source[s.split("/")[0]][r["best_kind"] or "none"] += 1
-    named = sum(1 for r in results if r["best_kind"] in ("doi", "package_id", "title"))
-    body = sum(1 for r in results if r["body_hit"])
-    refs_only = sum(1 for r in results if r["hits"] and not r["body_hit"])
+    named = sum(1 for r in results if r["best_kind"] in ("doi", "package_id", "title", "marker"))
+    body = sum(1 for r in results if r["query_candidate"])
+    refs_only = sum(1 for r in results if r["hits"] and not r["query_candidate"])
+    via_marker = sum(1 for r in results if r["query_candidate"]
+                     and r["query_candidate"]["kind"] == "marker")
     weak = sum(1 for r in results if r["best_kind"] in ("author_year", "generic"))
 
     L = []
@@ -160,13 +174,15 @@ def report(results: list[dict], pool: int, seed: int) -> Path:
     w("| Stage | Pairs | Share |")
     w("|---|---:|---:|")
     w(f"| Sampled | {n} | 100% |")
-    r_open = routes["europepmc"] + routes["pdf"]
+    r_open = routes["europepmc"] + routes["pdf"] + routes["manual"]
     other = routes["not-a-paper"] + routes["non-doi"]
     w(f"| Full text read by the script | {r_open} | {100 * r_open / n:.0f}% |")
     w(f"| ... via Europe PMC XML | {routes['europepmc']} | |")
     w(f"| ... via open PDF | {routes['pdf']} | |")
+    w(f"| ... via a PDF saved by hand | {routes['manual']} | |")
     w(f"| Dataset named unambiguously (DOI, package id or title) | {named} | {100 * named / n:.0f}% |")
-    w(f"| ... with at least one hit in the body text | {body} | {100 * body / n:.0f}% |")
+    w(f"| ... with a query candidate in the body text | {body} | {100 * body / n:.0f}% |")
+    w(f"| ...... of which found by resolving a reference-list marker | {via_marker} | |")
     w(f"| ... hits only in the reference list (body sentence still to be resolved) | {refs_only} | {100 * refs_only / n:.0f}% |")
     w(f"| Only a weak pointer (author-year or a generic EDI mention) | {weak} | {100 * weak / n:.0f}% |")
     w(f"| Read, but no mention of the dataset found | {kinds['no-mention']} | {100 * kinds['no-mention'] / n:.0f}% |")
@@ -208,14 +224,20 @@ def report(results: list[dict], pool: int, seed: int) -> Path:
           f"{r['edi_datasets_cited_by_paper']} EDI dataset(s); link source {', '.join(r['sources'])}")
         if not r["route"]:
             w(f"- **Text:** {r['outcome']} ({'; '.join(r['tried']) or 'no open location'})")
+            if r["outcome"] == "walled":
+                w(f"- **To read it by hand:** save the PDF as "
+                  f"`data/evalset/manual/{fulltext.slug(r['citing_doi'])}.pdf` and re-run")
         else:
             w(f"- **Text:** {r['route']}, {r['chars']:,} chars")
             if not r["hits"]:
                 w("- **Mention:** none found")
+            best = extract.best_query(r["hits"])
             for h in r["hits"]:
                 where = "reference list" if h["in_reference_list"] else "body"
-                w(f"- **{h['kind']}**, {where} [{h['char_start']}–{h['char_end']}]: "
-                  f"{h['sentence'][:600]}")
+                tag = " ← **query candidate**" if h is best else ""
+                via = f" via ref {h['ref_label']}" if h.get("ref_label") else ""
+                w(f"- **{h['kind']}**{via}, {where} [{h['char_start']}–{h['char_end']}]: "
+                  f"{h['sentence'][:600]}{tag}")
         w("- **Verdict:** ")
         w("")
     REPORT.write_text("\n".join(L), encoding="utf-8")

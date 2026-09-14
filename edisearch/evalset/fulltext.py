@@ -21,6 +21,10 @@ need it are the same ones that answer 403 (checked 2026-09-13).
 Unpaywall is not used: it wants an email in the query string, and OpenAlex
 carries its open-access data anyway.
 
+A person can save a walled paper's PDF by hand into
+`data/evalset/manual/<doi-slug>.pdf`; `text()` reads that before anything
+else, so the hand step is one file copy per paper.
+
 Everything is cached under `data/evalset/fulltext/<doi-slug>/` so a re-run
 costs no requests: `openalex.json`, `europepmc.json`, the raw `.xml` or
 `.pdf`, and `text.txt`, which is what `extract.py` reads and what character
@@ -36,7 +40,9 @@ import urllib.parse
 from pathlib import Path
 
 from edisearch import net
-from edisearch.paths import FULLTEXT
+from edisearch.paths import EVALSET, FULLTEXT
+
+MANUAL = EVALSET / "manual"
 
 OPENALEX = "https://api.openalex.org/works/doi:{doi}"
 EPMC_SEARCH = ("https://www.ebi.ac.uk/europepmc/webservices/rest/search"
@@ -136,7 +142,16 @@ _TAG = re.compile(r"<[^>]+>")
 _WS = re.compile(r"[ \t\r\f\v]+")
 
 
+_XREF = re.compile(r"<xref[^>]*ref-type=\"bibr\"[^>]*>(.*?)</xref>", re.S)
+_LABEL = re.compile(r"<label>\s*(.*?)\s*</label>", re.S)
+
+
 def _clean(chunk: str) -> str:
+    # In-text citation markers become bracketed so numbered styles that print
+    # them as superscripts ("corals49") survive tag stripping as "[49]", and
+    # a reference's <label> stays glued to its entry as "49. ".
+    chunk = _XREF.sub(lambda m: f"[{_TAG.sub('', m.group(1)).strip()}]", chunk)
+    chunk = _LABEL.sub(lambda m: f"{m.group(1).rstrip('.')}. ", chunk)
     chunk = re.sub(r"</(p|title|ref|sec|mixed-citation|element-citation)>", "\n", chunk)
     chunk = _TAG.sub(" ", chunk)
     chunk = chunk.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
@@ -175,12 +190,53 @@ def _pdf_text(data: bytes) -> tuple[str, int]:
 
 
 
+def manual_file(doi: str) -> Path | None:
+    """A PDF or XML a person saved by hand for a walled paper, if any.
+
+    `data/evalset/manual/<doi-slug>.pdf` (or `.xml` for JATS). The slug is
+    the DOI lowercased with everything but letters, digits, `.`, `_` and `-`
+    replaced by `_`; `docs/yield_probe.md` prints it per walled pair.
+    """
+    for ext in (".pdf", ".xml"):
+        p = MANUAL / f"{slug(doi)}{ext}"
+        if p.exists() and p.stat().st_size > 0:
+            return p
+    return None
+
+
+def _from_manual(doi: str, src: Path, d: Path, txt_path: Path) -> dict | None:
+    body = src.read_bytes()
+    if src.suffix == ".xml":
+        t, refs = _jats_text(body.decode("utf-8", "replace"))
+    elif body[:5] == b"%PDF-":
+        try:
+            t, refs = _pdf_text(body)
+        except Exception as e:  # noqa: BLE001
+            return {"error": f"pypdf:{type(e).__name__}"}
+    else:
+        return {"error": "not a PDF"}
+    txt_path.write_text(t, encoding="utf-8")
+    return {"route": "manual", "outcome": "manual", "chars": len(t),
+            "reflist_start": refs, "manual_file": src.name, "tried": ["manual"]}
+
+
 def text(doi: str) -> dict:
     """{"route": ..., "chars": n, "path": ...} and text.txt on disk, or route None."""
     d = folder(doi)
     meta_path, txt_path = d / "text.json", d / "text.txt"
-    if meta_path.exists():
-        return json.loads(meta_path.read_text(encoding="utf-8"))
+    cached = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else None
+
+    # A hand-saved file wins over any earlier outcome, so dropping a PDF into
+    # the manual folder is all it takes to turn a walled pair into a read one.
+    src = manual_file(doi)
+    if src and (not cached or cached.get("route") in (None, "manual")):
+        if not cached or cached.get("manual_file") != src.name:
+            m = _from_manual(doi, src, d, txt_path)
+            if m and "error" not in m:
+                meta_path.write_text(json.dumps(m), encoding="utf-8")
+                return m
+    if cached:
+        return cached
 
     meta = {"route": None, "chars": 0, "tried": []}
     if not re.match(r"10\.\d{4,}/", doi):

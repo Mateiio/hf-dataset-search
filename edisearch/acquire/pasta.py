@@ -121,7 +121,7 @@ def revisions(scope: str, identifier: int) -> list[int]:
 
 
 _PKG = re.compile(r"<packageid>([^<]+)</packageid>")
-_NUMFOUND = re.compile(r'numFound="(\d+)"')
+_NUMFOUND = re.compile(r"numFound=['\"](\d+)['\"]")
 
 
 def current_packages(scope: str, rows: int = 1000) -> list[str]:
