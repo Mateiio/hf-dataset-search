@@ -48,9 +48,31 @@ _GENERIC = re.compile(
 # initials), optionally after a bullet; a capitalised word followed by
 # ordinary words ("Data Initiative.") is not an entry start.
 _NUM_ENTRY = re.compile(r"(?m)^\s*\[?(\d{1,3})[\].)]?\s+(?=[A-Z])")
+# "Surname, A.", "Surname AB,", "Surname, Firstname" -- a comma right after
+# the surname, or initials without one. "Data Initiative." has neither.
 _AUTHOR_ENTRY = re.compile(
     r"(?m)^[\s•·*\-–]*([A-Z][A-Za-z'’\-]+(?: [A-Z][A-Za-z'’\-]+)?)"
-    r",?\s+(?:[A-Z]{1,3}[.,\s]|[A-Z]\.|[A-Z][a-z]+ [A-Z]\.)")
+    r"(?:,\s+[A-Z]|\s+[A-Z]{1,3}[.,\s])")
+
+# A sentence that is a citation rather than prose: it carries the DOI and a
+# year, and none of the words prose uses to talk about data. Such sentences
+# turn up in data-availability statements, supplementary tables and
+# reference lists the heading detector missed, and they are never queries.
+_PROSE = re.compile(
+    r"\b(available|availab|obtained|downloaded|used|using|use|accessed|archived|"
+    r"deposited|provided|retrieved|compiled|acquired|include|includes|were|was|"
+    r"we|our|this study|these data|the data|can be|are|is)\b", re.I)
+_CITE_YEAR = re.compile(r"(?:\(\s*(?:19|20)\d{2}[a-z]?\s*\)|[,.]\s*(?:19|20)\d{2}[a-z]?\s*[.,;]|"
+                        r"\b(?:19|20)\d{2}[a-z]?\s*\.\s*(?:10\.|https?://|doi))")
+
+
+def looks_like_entry(sentence: str) -> bool:
+    s = sentence.strip()
+    if "10.6073/" not in s.replace(" ", "") and "doi" not in s.lower():
+        return False
+    if _PROSE.search(s):
+        return False
+    return bool(_CITE_YEAR.search(s)) or "Environmental Data Initiative" in s
 _YEAR = re.compile(r"\b((?:19|20)\d{2})([a-z]?)\b")
 
 KIND_RANK = {"doi": 0, "package_id": 1, "title": 2, "marker": 3,
@@ -62,9 +84,8 @@ KIND_RANK = {"doi": 0, "package_id": 1, "title": 2, "marker": 3,
 # or the reference list, capped, so a paper's entire discussion is never
 # swallowed by a misread.
 _DA_HEADING = re.compile(
-    r"(?im)^[^\n]{0,20}\b(Data (?:and code |and software )?availability(?: statement)?|"
-    r"Code and data availability|Data accessibility(?: statement)?|"
-    r"Availability of data(?: and materials)?)\b[^\n]{0,30}$")
+    r"(?im)^[^\n]{0,20}\b(?:(?:Data|Code)[^\n]{0,40}?availability(?: statement)?|"
+    r"Data accessibility(?: statement)?|Availability of data(?: and materials)?)\b[^\n]{0,30}$")
 _DA_MAX = 20000
 _BACK_MATTER = re.compile(
     r"(?im)^[^\n]{0,6}(Author contributions?|Competing interests?|Acknowledge?ments?|"
@@ -204,9 +225,14 @@ def entry_label(text: str, span_start: int, hit_pos: int) -> dict | None:
     """
     if span_start < 0 or hit_pos < span_start:
         return None
-    window = text[span_start:hit_pos]
-    nums = list(_NUM_ENTRY.finditer(window))
-    auths = list(_AUTHOR_ENTRY.finditer(window))
+    # The hit may sit at the very start of its own entry (an author-year
+    # pattern matches "Boose, Emery ... (2022)" on the entry line itself), so
+    # the entry start is the last one at or before the hit, and the regex may
+    # read a little past the hit to recognise it.
+    window = text[span_start:hit_pos + 120]
+    limit = hit_pos - span_start
+    nums = [m for m in _NUM_ENTRY.finditer(window) if m.start() <= limit]
+    auths = [m for m in _AUTHOR_ENTRY.finditer(window) if m.start() <= limit]
     last_num = nums[-1] if nums else None
     last_auth = auths[-1] if auths else None
     if last_num and (not last_auth or last_num.start() >= last_auth.start()):
@@ -261,6 +287,9 @@ def find(text: str, ds: dict, max_per_kind: int = 3,
     """Sentences naming the dataset, strongest kind first, deduplicated."""
     sents = sentences(text)
     biblio = bibliography_spans(text, reflist_start)
+    title = ds.get("title") or ""
+    core_title = _norm(title.split(":")[-1] if ":" in title else title)
+    core_title = core_title if len(core_title.split()) >= 4 else ""
     norm_chars, back = [], []
     for i, ch in enumerate(text):
         c = ch.lower() if ch.isalnum() else " "
@@ -287,8 +316,12 @@ def find(text: str, ds: dict, max_per_kind: int = 3,
                     p0, _, ps = sents[j - 1]
                     if s0 - p0 < 400:
                         s0, s = p0, (ps + " " + s).strip()
+                # A sentence quoting the dataset's whole title is a citation,
+                # never prose, wherever it sits; so is one shaped like an entry.
                 h = {"kind": kind, "char_start": s0, "char_end": s1,
-                     "in_reference_list": in_spans(s0, biblio),
+                     "in_reference_list": in_spans(s0, biblio) or kind == "title" or
+                     (kind in ("doi", "package_id") and (looks_like_entry(s) or
+                                                         (core_title and core_title in _norm(s)))),
                      "sentence": s}
                 if extra:
                     h.update(extra)
@@ -319,8 +352,14 @@ def find(text: str, ds: dict, max_per_kind: int = 3,
     # pass 2: for hits in the reference list, resolve the entry's marker in
     # the body. One label per distinct entry; markers ranked by position.
     labels: dict[str, dict] = {}
+    entry_sents = [(h["char_start"], h["char_end"]) for h in hits if h["in_reference_list"]]
     for pos in direct_positions:
         span = next(((a, b) for a, b in biblio if a <= pos < b), None)
+        if span is None:
+            # an entry-shaped sentence outside any bibliography span: look back
+            # from the hit within its own sentence, plus a little for a number
+            ent = next(((a, b) for a, b in entry_sents if a <= pos < b), None)
+            span = (max(0, ent[0] - 6), ent[1]) if ent else None
         lab = entry_label(text, span[0], pos) if span else None
         if lab:
             key = f"{lab['style']}:{lab.get('n') or lab.get('surname')}:{lab.get('year')}"
@@ -333,7 +372,7 @@ def find(text: str, ds: dict, max_per_kind: int = 3,
             continue
         n = 0
         for m in rx.finditer(text, 0, body_end):
-            if in_spans(m.start(), da_spans):
+            if in_spans(m.start(), da_spans) or in_spans(m.start(), entry_sents):
                 continue
             if lab["style"] == "number" and not _in_range(m.group(0), lab["n"]):
                 continue
