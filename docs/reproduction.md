@@ -4,35 +4,39 @@ Run 2026-09-14 by `python -m edisearch.measure.reproduce`. Both corpora scored i
 
 ## Recall@5
 
-| Query set | n | `archive/lexical` | `archive/semantic` | `archive/hybrid` | `edi/lexical` | `edi/bm25` | `edi/semantic` | `edi/hybrid` | `edi/hybrid-bm25` |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| natural | 10 | 0.90 | 0.90 | 1.00 | 0.90 | 1.00 | 0.90 | 1.00 | 1.00 |
-| paraphrase | 7 | 0.00 | 0.43 | 0.29 | 0.00 | 0.00 | 0.43 | 0.29 | 0.29 |
-| all | 17 | 0.53 | 0.71 | 0.71 | 0.53 | 0.59 | 0.71 | 0.71 | 0.71 |
+| Query set | n | `archive/lexical` | `archive/semantic` | `archive/hybrid` | `edi/lexical` | `edi/bm25` | `edi/semantic` | `edi/hybrid` | `edi/hybrid-bm25` | `all/lexical` | `all/bm25` | `all/semantic` | `all/hybrid` | `all/hybrid-bm25` |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| natural | 10 | 0.90 | 0.90 | 1.00 | 0.90 | 1.00 | 0.90 | 1.00 | 1.00 | 0.60 | 0.80 | 0.30 | 0.60 | 0.70 |
+| paraphrase | 7 | 0.00 | 0.43 | 0.29 | 0.00 | 0.00 | 0.43 | 0.29 | 0.29 | 0.00 | 0.00 | 0.14 | 0.14 | 0.14 |
+| all | 17 | 0.53 | 0.71 | 0.71 | 0.53 | 0.59 | 0.71 | 0.71 | 0.71 | 0.35 | 0.47 | 0.24 | 0.41 | 0.47 |
 
 **Like for like:** every unchanged engine scores the same on the EDI harvest as on the archive corpus, rank for rank, and the archive column matches the README's table (lexical 0.90 / 0.00, semantic 0.90 / 0.43, hybrid 1.00 / 0.29). The corpus and the index reproduce. The plan's "recall@5 of 1.00 on 17 queries" was the natural column of that table; there was never a 1.00 on all 17.
 
 ## Per-query rank of the target (lower is better, `-` = not in the top 25)
 
-| Query | Family | `archive/lexical` | `archive/semantic` | `archive/hybrid` | `edi/lexical` | `edi/bm25` | `edi/semantic` | `edi/hybrid` | `edi/hybrid-bm25` |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| 30-minute below-canopy understory PAR at the EMS tower | natural | 6 | 5 | 4 | 6 | 5 | 5 | 4 | 4 |
-| plot coordinates latitude longitude for long-term research sites | natural | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
-| eddy covariance net ecosystem exchange carbon flux tower | natural | 2 | 1 | 1 | 2 | 2 | 1 | 1 | 1 |
-| leaf area index measured at HEM and LPH towers | natural | 2 | 1 | 1 | 2 | 1 | 1 | 1 | 1 |
-| biomass inventory biometric plots EMS tower coarse woody debris | natural | 2 | 1 | 1 | 2 | 1 | 1 | 2 | 1 |
-| harmonized Landsat Sentinel vegetation indices NDVI EVI2 | natural | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
-| measured direct and diffuse solar radiation | natural | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
-| microclimate at the hemlock and upper-slope towers | natural | 4 | 9 | 3 | 4 | 2 | 9 | 3 | 3 |
-| microclimate at the hardwood walk-up tower | natural | 2 | 1 | 1 | 2 | 3 | 1 | 1 | 1 |
-| spectral vegetation indices at 30 m resolution for plots | natural | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
-| light below the canopy | paraphrase | 20 | 11 | 19 | 20 | - | 11 | 19 | - |
-| how much sunlight reaches the forest floor | paraphrase | - | - | - | - | - | - | - | - |
-| where exactly are the research plots located | paraphrase | 11 | 3 | 2 | 11 | 18 | 3 | 2 | 3 |
-| carbon dioxide breathing in and out of the forest | paraphrase | - | - | 20 | - | 14 | - | 20 | 15 |
-| how much leaf material falls each autumn | paraphrase | 11 | 1 | 1 | 11 | 19 | 1 | 1 | 1 |
-| satellite greenness of the forest over time | paraphrase | - | 2 | 14 | - | - | 2 | 14 | 10 |
-| cloudy versus clear sky sunlight split | paraphrase | - | - | - | - | - | - | - | - |
+| Query | Family | `archive/lexical` | `archive/semantic` | `archive/hybrid` | `edi/lexical` | `edi/bm25` | `edi/semantic` | `edi/hybrid` | `edi/hybrid-bm25` | `all/lexical` | `all/bm25` | `all/semantic` | `all/hybrid` | `all/hybrid-bm25` |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 30-minute below-canopy understory PAR at the EMS tower | natural | 6 | 5 | 4 | 6 | 5 | 5 | 4 | 3 | 15 | 5 | 23 | 9 | 6 |
+| plot coordinates latitude longitude for long-term research sites | natural | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 14 | - | 7 | 11 |
+| eddy covariance net ecosystem exchange carbon flux tower | natural | 2 | 1 | 1 | 2 | 2 | 1 | 1 | 1 | - | 12 | 9 | - | 9 |
+| leaf area index measured at HEM and LPH towers | natural | 2 | 1 | 1 | 2 | 1 | 1 | 1 | 1 | 4 | 1 | 1 | 1 | 1 |
+| biomass inventory biometric plots EMS tower coarse woody debris | natural | 2 | 1 | 1 | 2 | 1 | 1 | 1 | 1 | 3 | 1 | 1 | 1 | 1 |
+| harmonized Landsat Sentinel vegetation indices NDVI EVI2 | natural | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 9 | 1 | 1 |
+| measured direct and diffuse solar radiation | natural | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 23 | 1 | 14 | 14 | 2 |
+| microclimate at the hemlock and upper-slope towers | natural | 4 | 9 | 3 | 4 | 2 | 9 | 3 | 3 | 12 | 2 | 10 | 5 | 3 |
+| microclimate at the hardwood walk-up tower | natural | 2 | 1 | 1 | 2 | 3 | 1 | 1 | 1 | 2 | 3 | 1 | 1 | 1 |
+| spectral vegetation indices at 30 m resolution for plots | natural | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 3 | 7 | 3 | 3 |
+| light below the canopy | paraphrase | 20 | 11 | 19 | 20 | - | 11 | 19 | - | 20 | - | - | 25 | - |
+| how much sunlight reaches the forest floor | paraphrase | - | - | - | - | - | - | - | - | - | - | - | - | - |
+| where exactly are the research plots located | paraphrase | 11 | 3 | 2 | 11 | 18 | 3 | 2 | 3 | - | - | - | - | - |
+| carbon dioxide breathing in and out of the forest | paraphrase | - | - | 20 | - | 14 | - | 20 | 15 | - | - | - | - | - |
+| how much leaf material falls each autumn | paraphrase | 11 | 1 | 1 | 11 | 19 | 1 | 1 | 1 | - | - | 1 | 5 | 4 |
+| satellite greenness of the forest over time | paraphrase | - | 2 | 14 | - | - | 2 | 14 | 10 | - | - | 8 | 24 | 18 |
+| cloudy versus clear sky sunlight split | paraphrase | - | - | - | - | - | - | - | - | - | - | - | - | - |
+
+## At full scale
+
+The `all/*` columns are the same 17 queries against every harvested package, 10,639 across EDI's research scopes, instead of the 459 Harvard Forest ones. The queries were written for a single-site corpus and most name no site, so "microclimate at the hemlock and upper-slope towers" now competes with tower microclimate from a dozen LTER sites. Every engine loses; the dense one loses most, the plain BM25 least. That is a property of these queries as much as of the engines, and it is why the evaluation set is built from queries that name what they want.
 
 ## What BM25 adds
 

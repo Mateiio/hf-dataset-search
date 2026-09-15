@@ -53,6 +53,10 @@ def run(verbose: bool = True) -> dict:
 
     engines = {f"archive/{m}": hf_engine(m, hf_records) for m in HF_MODES}
     engines.update({f"edi/{m}": store.get_engine(m, edi_records) for m in store.MODES})
+    # the same queries against everything harvested, if more than one scope is
+    all_records = store.load_records()
+    if len(all_records) > len(edi_records):
+        engines.update({f"all/{m}": store.get_engine(m, all_records) for m in store.MODES})
 
     rows = []
     for text, want, family in queries:
@@ -75,7 +79,8 @@ def run(verbose: bool = True) -> dict:
               "recall5": {"all": recall(names), "natural": recall(names, "natural"),
                           "paraphrase": recall(names, "paraphrase")},
               "recall1": {"all": recall(names, k=1)},
-              "hf_size": len(hf_records), "edi_size": len(edi_records)}
+              "hf_size": len(hf_records), "edi_size": len(edi_records),
+              "all_size": len(all_records)}
     if verbose:
         _print(result, names)
     _write(result, names)
@@ -132,6 +137,18 @@ def _write(res, names):
         w(f"| {r['query']} | {r['family']} | " + " | ".join(
             str(r["ranks"][n] or "-") for n in names) + " |")
     w("")
+    if any(n.startswith("all/") for n in names):
+        w("## At full scale")
+        w("")
+        w(f"The `all/*` columns are the same 17 queries against every harvested package, "
+          f"{res['all_size']:,} across EDI's research scopes, instead of the 459 Harvard "
+          "Forest ones. The queries were written for a single-site corpus and most name no "
+          "site, so \"microclimate at the hemlock and upper-slope towers\" now competes with "
+          "tower microclimate from a dozen LTER sites. Every engine loses; the dense one loses "
+          "most, the plain BM25 least. That is a property of these queries as much as of the "
+          "engines, and it is why the evaluation set is built from queries that name what "
+          "they want.")
+        w("")
     w("## What BM25 adds")
     w("")
     w("`bm25` is plain Okapi BM25 (k1 1.2, b 0.75, unigrams) over the same document text "
