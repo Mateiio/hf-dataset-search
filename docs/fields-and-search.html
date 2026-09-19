@@ -1,0 +1,247 @@
+<title>Fields and Search at Harvard Forest</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --bg: #F6F8F4; --card: #FFFFFF; --ink: #1B2620; --muted: #5E6B63; --rule: #D6DDD7;
+    --accent: #2F6F4E; --lex: #2F6F4E; --col: #2E6E9E; --sem: #8A3B63; --hf: #8C6A2B;
+    --lex-soft: #E3F0E8; --col-soft: #E2EDF5; --sem-soft: #F2E4EB; --hf-soft: #F3ECDD;
+    --yes: #2F6F4E; --no: #C9D1CB;
+    --display: "Bricolage Grotesque", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #131916; --card: #1A211D; --ink: #E7ECE8; --muted: #9DAAA2; --rule: #2B3630;
+      --accent: #6FBF95; --lex: #6FBF95; --col: #7FB4E0; --sem: #D68AB0; --hf: #D2B06A;
+      --lex-soft: #1E2F27; --col-soft: #1B2A36; --sem-soft: #33222B; --hf-soft: #33291A;
+      --yes: #6FBF95; --no: #34413A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131916; --card: #1A211D; --ink: #E7ECE8; --muted: #9DAAA2; --rule: #2B3630;
+    --accent: #6FBF95; --lex: #6FBF95; --col: #7FB4E0; --sem: #D68AB0; --hf: #D2B06A;
+    --lex-soft: #1E2F27; --col-soft: #1B2A36; --sem-soft: #33222B; --hf-soft: #33291A;
+    --yes: #6FBF95; --no: #34413A;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.6;
+         padding-inline: 20px; padding-block: 32px 64px; }
+  .page { max-width: 68ch; margin: 0 auto; }
+  h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.15; margin: 0; }
+  h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.01em; }
+  h2 { font-size: 1.55rem; font-weight: 700; margin-top: 3rem; padding-top: 1.2rem; border-top: 2px solid var(--rule); }
+  h3 { font-size: 1.15rem; font-weight: 700; margin-top: 1.8rem; }
+  p { margin: 0.9rem 0; }
+  .lede { font-size: 1.15rem; color: var(--muted); margin-top: 0.8rem; }
+  .eyebrow { font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  code, .id { font-family: var(--mono); font-size: 0.85em; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 0.05em 0.35em; }
+  a { color: var(--accent); }
+  ul, ol { padding-left: 1.4rem; } li { margin: 0.35rem 0; }
+  .toc { display: grid; gap: 0.35rem; padding: 1rem 1.2rem; margin: 1.5rem 0; background: var(--card); border: 1px solid var(--rule); border-radius: 6px; font-family: var(--display); font-size: 0.95rem; }
+  .toc a { text-decoration: none; color: var(--ink); } .toc a:hover { color: var(--accent); }
+  .toc span { color: var(--muted); font-weight: 500; margin-right: 0.5rem; }
+  .callout { border-left: 4px solid var(--accent); padding: 0.6rem 1rem; margin: 1.2rem 0; background: var(--card); border-radius: 0 6px 6px 0; }
+  .callout p { margin: 0.4rem 0; }
+  .tw { overflow-x: auto; margin: 1.2rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 0.5rem 0.65rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: var(--display); font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  td.num, th.num { text-align: right; }
+  td.c, th.c { text-align: center; }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--yes); vertical-align: middle; }
+  .dot.off { background: var(--no); }
+  .dot.hf { background: var(--hf); } .dot.lex { background: var(--lex); } .dot.col { background: var(--col); } .dot.sem { background: var(--sem); }
+  .chip { display: inline-block; font-family: var(--display); font-size: 0.78rem; font-weight: 500; padding: 0.1em 0.6em; border-radius: 999px; white-space: nowrap; }
+  .chip.hf { background: var(--hf-soft); color: var(--hf); } .chip.lex { background: var(--lex-soft); color: var(--lex); }
+  .chip.col { background: var(--col-soft); color: var(--col); } .chip.sem { background: var(--sem-soft); color: var(--sem); }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.2rem; font-size: 0.9rem; color: var(--muted); margin: 0.4rem 0 0.8rem; }
+  .legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .example { background: var(--card); border: 1px solid var(--rule); border-radius: 6px; padding: 1rem 1.2rem; margin: 1.2rem 0; }
+  .example h3 { margin-top: 0; }
+  .formula { font-family: var(--mono); font-size: 0.95rem; background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 0.6rem 0.9rem; margin: 0.8rem 0; overflow-x: auto; }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; margin: 0.8rem 0; font-size: 0.95rem; }
+  .kv b { font-family: var(--display); font-weight: 500; color: var(--muted); }
+  .small { font-size: 0.88rem; color: var(--muted); }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.85rem; }
+  @media (max-width: 600px) { body { font-size: 16px; } h1 { font-size: 1.9rem; } .kv { grid-template-columns: 1fr; } }
+</style>
+
+<div class="page">
+  <div class="eyebrow">Harvard Forest data archive · hf-dataset-search</div>
+  <h1>Fields and Search at Harvard Forest</h1>
+  <p class="lede">What a dataset's description contains, which parts of it Harvard Forest's own search looks at, which parts the new search engine looks at, and how the new engine combines its two answers into one list.</p>
+
+  <nav class="toc">
+    <a href="#g1"><span>1</span>Where a dataset's description lives, and what's in it</a>
+    <a href="#g1b"><span>2</span>Landing page vs. EML file: how much overlaps</a>
+    <a href="#g2"><span>3</span>Which fields each search uses</a>
+    <a href="#g3"><span>4</span>What feeds the new engine's three indexes</a>
+    <a href="#g4"><span>5</span>How hybrid combines two ranked lists</a>
+  </nav>
+
+  <h2 id="g1">1. Where a dataset's description lives</h2>
+  <p>Every Harvard Forest dataset — take <code>hf206</code>, <em>Microclimate at Harvard Forest HEM, LPH and EMS Towers since 2005</em> — exists in three places, and they all say the same thing:</p>
+  <ol>
+    <li><b>The landing page</b> on the Harvard Forest website (<code>showData.html?id=hf206</code>). This is what a person sees: a title, an abstract, who made it, where, when, and a "Detailed Metadata" section listing every data file and every column in it.</li>
+    <li><b>The EML file.</b> Yes, it is on the landing page — the row labelled <b>EML file:</b> links to <code>data/eml/hf206.xml</code>. EML (Ecological Metadata Language) is an XML format: the same information as the landing page, but as tagged text a program can read. The landing page is <em>generated from</em> this file.</li>
+    <li><b>Copies at EDI and DataONE.</b> Harvard Forest publishes each dataset to the Environmental Data Initiative, which gives it a package id (<code>knb-lter-hfr.206.30</code>) and a DOI. Both links are on the landing page too. The EML there is byte-for-byte the same file.</li>
+  </ol>
+  <p>The actual data — the CSV files with the measurements — is separate. The EML <em>describes</em> the CSVs (what each column means, its unit) but does not contain them. Search engines index the description, not the numbers.</p>
+
+  <h3>What the EML file contains</h3>
+  <p>Counting across all 459 Harvard Forest EML files, these elements appear. "459" means every dataset has it.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Group</th><th>EML element</th><th>What it holds</th><th class="num">Datasets with it</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="4">What</td><td><code>title</code></td><td>One line</td><td class="num">459</td></tr>
+      <tr><td><code>abstract</code></td><td>A paragraph or two</td><td class="num">459</td></tr>
+      <tr><td><code>keywordSet</code></td><td>Three lists: LTER controlled vocabulary, LTER core area, and a default set (Harvard Forest, HFR, LTER, USA)</td><td class="num">459</td></tr>
+      <tr><td><code>methods</code></td><td>How the data was collected, in prose</td><td class="num">459</td></tr>
+      <tr><td rowspan="3">Who</td><td><code>creator</code></td><td>Investigators (name, organisation)</td><td class="num">459</td></tr>
+      <tr><td><code>contact</code></td><td>Who to ask</td><td class="num">459</td></tr>
+      <tr><td><code>associatedParty</code></td><td>Other people involved</td><td class="num">320</td></tr>
+      <tr><td rowspan="3">Where / when</td><td><code>geographicCoverage</code></td><td>Place name plus a bounding box of coordinates</td><td class="num">459</td></tr>
+      <tr><td><code>temporalCoverage</code></td><td>Start and end dates</td><td class="num">450</td></tr>
+      <tr><td><code>taxonomicCoverage</code></td><td>Species studied, Latin and common names</td><td class="num">282</td></tr>
+      <tr><td rowspan="3">The files</td><td><code>dataTable</code></td><td>One per CSV: filename, a one-line description, and every column as an <code>attribute</code> with a name, a definition sentence, and a unit</td><td class="num">413</td></tr>
+      <tr><td><code>otherEntity</code></td><td>Non-table files: shapefiles, images, zips</td><td class="num">167</td></tr>
+      <tr><td><code>unit</code></td><td>Units on columns (celsius, micromolePerMeterSquaredPerSecond…)</td><td class="num">400</td></tr>
+      <tr><td rowspan="4">Admin</td><td><code>project</code>, <code>funding</code></td><td>"Harvard Forest Long-Term Ecological Research", NSF grant numbers</td><td class="num">459</td></tr>
+      <tr><td><code>intellectualRights</code>, <code>licensed</code></td><td>CC0, plus the "please keep the creators informed" text</td><td class="num">459</td></tr>
+      <tr><td><code>pubDate</code>, <code>maintenance</code></td><td>Release date; "ongoing" or "completed"</td><td class="num">459</td></tr>
+      <tr><td><code>alternateIdentifier</code></td><td>The DOI</td><td class="num">458</td></tr>
+      <tr><td>Custom</td><td><code>additionalMetadata</code></td><td>Harvard Forest's own tags: <code>studyType</code> and <code>researchTopic</code></td><td class="num">459</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">The 46 datasets with no <code>dataTable</code> are ones whose files are not tables — GIS layers, photos — described as <code>otherEntity</code> instead. <code>hf206</code> alone has 5 tables and 344 columns.</p>
+
+  <h2 id="g1b">2. Landing page vs. EML file: the overlap</h2>
+  <p>Short answer: <b>the landing page is the EML file, rendered.</b> Of the 31 labelled fields on <code>hf206</code>'s page, 30 come straight from the XML. The only thing the website adds is <b>Related links</b> (pointers to other Harvard Forest datasets), which comes from the site's own database.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Landing-page label</th><th>Where it comes from in the EML</th></tr></thead>
+    <tbody>
+      <tr><td>Lead, Investigators, Contact, Organization</td><td><code>creator</code>, <code>associatedParty</code>, <code>contact</code></td></tr>
+      <tr><td>Start date, End date</td><td><code>temporalCoverage</code></td></tr>
+      <tr><td>Status</td><td><code>maintenance</code> ("ongoing")</td></tr>
+      <tr><td>Location, Latitude, Longitude, Elevation, Datum</td><td><code>geographicCoverage</code></td></tr>
+      <tr><td>Taxa</td><td><code>taxonomicCoverage</code></td></tr>
+      <tr><td>Release date, Language</td><td><code>pubDate</code>, <code>language</code></td></tr>
+      <tr><td>EML file, DOI, EDI, DataONE</td><td>The file itself; <code>alternateIdentifier</code>; the package id</td></tr>
+      <tr><td>Study type, Research topic</td><td><code>additionalMetadata</code> (Harvard Forest's custom tags; the page expands "plot" to "large experiments and permanent plot studies")</td></tr>
+      <tr><td>LTER core area, Keywords</td><td>The three <code>keywordSet</code>s</td></tr>
+      <tr><td>Abstract, Methods</td><td><code>abstract</code>, <code>methods</code></td></tr>
+      <tr><td>Project, Funding, Use, License, Citation</td><td><code>project</code>, <code>funding</code>, <code>intellectualRights</code>, <code>licensed</code>; the citation is assembled from creator + title + year</td></tr>
+      <tr><td>Detailed Metadata (each file, each column)</td><td><code>dataTable</code> → <code>attribute</code>: name, definition, unit, missing-value code</td></tr>
+      <tr><td><b>Related links</b></td><td><b>Not in the EML.</b> Added by the website</td></tr>
+    </tbody>
+  </table></div>
+  <p>So for search purposes there is one source of truth: the EML. Anything a search engine could know about a dataset, it can get from that file — and the new engine reads exactly that file (the same one, fetched from EDI).</p>
+
+  <h2 id="g2">3. Which fields each search uses</h2>
+
+  <h3>Harvard Forest's own search</h3>
+  <p>The archive offers six search pages. The main one, "Search Datasets by Multiple Fields", says in its own words which fields it reads:</p>
+  <div class="callout"><p>"Search datasets by ID number, title, abstract, methods, keyword, location, investigator, and contact. Displays datasets where the submitted string is contained in one or more of these fields."</p></div>
+  <p>Two things follow from "contained in". First, it is a <b>substring match</b>: your text has to appear literally. Second, there is <b>no ranking</b> — results come back alphabetically by title, so the best match is not first. The other five pages (keyword, investigator, taxon, year range, ID) each require an <em>exact</em> match on one field.</p>
+  <p>Tested live on 19 September 2026:</p>
+  <div class="tw"><table>
+    <thead><tr><th>Typed into "search all"</th><th class="num">Results</th><th>Is <code>hf206</code> among them?</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>microclimate</td><td class="num">18</td><td>yes</td><td>The word is in its title. Alphabetical, so it appears 12th.</td></tr>
+      <tr><td>understory</td><td class="num">56</td><td>yes</td><td>Common word; long unranked list.</td></tr>
+      <tr><td>understory PAR</td><td class="num">1</td><td>yes</td><td>That exact phrase is in its methods.</td></tr>
+      <tr><td><code>par1_ave</code></td><td class="num">0</td><td>no</td><td>A column name. <b>Column names and definitions are not searched.</b></td></tr>
+      <tr><td>walk-up tower</td><td class="num">2</td><td><b>no</b></td><td>hf206's text writes "walkup tower". A hyphen breaks a substring match.</td></tr>
+      <tr><td>walkup tower</td><td class="num">2</td><td>yes</td><td>Same query without the hyphen.</td></tr>
+      <tr><td>sunlight</td><td class="num">4</td><td>no</td><td>hf206 says "photosynthetically active radiation", never "sunlight".</td></tr>
+      <tr><td>light below the canopy</td><td class="num">0</td><td>no</td><td>No dataset contains that phrase. Meaning is not considered.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The new engine</h3>
+  <p>The new engine builds <b>three separate indexes</b> from the EML, each fed different fields, and combines two of them at search time. The next section explains each; this table is the summary. Dots mark which fields go where.</p>
+  <div class="legend">
+    <span><i class="dot hf"></i> Harvard Forest search</span>
+    <span><i class="dot lex"></i> new: dataset index (TF-IDF)</span>
+    <span><i class="dot col"></i> new: column index (TF-IDF)</span>
+    <span><i class="dot sem"></i> new: semantic index (bge-m3)</span>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Field (from the EML)</th><th class="c">Harvard Forest</th><th class="c">Dataset index</th><th class="c">Column index</th><th class="c">Semantic</th></tr></thead>
+    <tbody>
+      <tr><td>Title</td><td class="c"><i class="dot hf"></i></td><td class="c"><i class="dot lex"></i> ×4</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot sem"></i></td></tr>
+      <tr><td>Keywords</td><td class="c"><i class="dot hf"></i></td><td class="c"><i class="dot lex"></i> ×3</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot sem"></i></td></tr>
+      <tr><td>Abstract</td><td class="c"><i class="dot hf"></i></td><td class="c"><i class="dot lex"></i> ×2</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot sem"></i></td></tr>
+      <tr><td>Methods</td><td class="c"><i class="dot hf"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td></tr>
+      <tr><td>Investigators, contact</td><td class="c"><i class="dot hf"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td></tr>
+      <tr><td>Location (place name)</td><td class="c"><i class="dot hf"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td></tr>
+      <tr><td>ID number</td><td class="c"><i class="dot hf"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td></tr>
+      <tr><td>Taxa, years</td><td class="c"><i class="dot hf"></i> <span class="small">(separate pages, exact match)</span></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td></tr>
+      <tr><td>Table description (one line per CSV)</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot lex"></i> ×1</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td></tr>
+      <tr><td>Table filename (<code>hf069-01-lai-plot.csv</code> → "lai plot")</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot lex"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td></tr>
+      <tr><td>Column names (<code>par1_ave</code>)</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot lex"></i></td><td class="c"><i class="dot col"></i></td><td class="c"><i class="dot off"></i></td></tr>
+      <tr><td>Column definitions ("understory photosynthetically active radiation 1…")</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot col"></i></td><td class="c"><i class="dot sem"></i></td></tr>
+      <tr><td>Column units</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot col"></i></td><td class="c"><i class="dot off"></i></td></tr>
+      <tr><td>Coordinates, dates, project, funding, license, study type</td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td><td class="c"><i class="dot off"></i></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The totals</h3>
+  <div class="kv">
+    <b>On the landing page</b><span>31 labelled fields</span>
+    <b>Harvard Forest search reads</b><span>8 fields (plus taxa and years on their own pages)</span>
+    <b>New engine reads</b><span>9 distinct fields, spread over three indexes</span>
+    <b>Both read</b><span><b>3</b>: title, keywords, abstract</span>
+    <b>Only Harvard Forest reads</b><span>methods, investigators, contact, location, ID, taxa, years</span>
+    <b>Only the new engine reads</b><span>table descriptions, table filenames, column names, column definitions, column units</span>
+  </div>
+  <div class="callout">
+    <p><b>An honest gap.</b> The new engine does not index <b>methods</b> or <b>people</b>, and Harvard Forest's does. A search for an investigator's name, or for a technique mentioned only in the methods text, works on the Harvard Forest site and not in the new engine. The parser already extracts both, so adding them is small — but it has not been tested, and adding text to a TF-IDF index can hurt as well as help (folding column definitions into the dataset index was tried and dropped recall from 0.90 to 0.80).</p>
+  </div>
+
+  <h2 id="g3">4. What feeds the new engine's three indexes</h2>
+
+  <h3><span class="chip lex">dataset index</span> one document per dataset, TF-IDF</h3>
+  <p>TF-IDF is word matching with weights: a word scores higher the more it appears in a dataset and the fewer other datasets use it, so "understory" is worth more than "forest". Each dataset becomes one document built from: title (repeated 4×), keywords (3×), abstract (2×), and for every CSV its one-line description (1×), its filename with the dashes turned into spaces, and its column names. Repeating a field is how you tell TF-IDF that a match in the title matters more than one in a column name. It indexes single words and two-word phrases ("understory par"), and hyphenated words are added a second time without the hyphen — which is why "walk-up tower" finds hf206 here and not on the Harvard Forest site.</p>
+  <p>Column <em>definitions</em> are deliberately left out of this index: hf206 has 344 of them covering soil moisture, wind, and temperature, and stuffing all of that into one document dilutes the signal.</p>
+
+  <h3><span class="chip col">column index</span> one document per distinct column definition, TF-IDF</h3>
+  <p>Instead, definitions get their own index at column granularity: 15,395 tiny documents, each "<code>par1_ave</code> (micromolePerMeterSquaredPerSecond): understory photosynthetically active radiation 1, measured by the HK2 datalogger". Duplicates are removed (hf206's six PAR sensors share one sentence). A dataset's <em>single best</em> column is its score here. This is how "understory light sensors" finds a dataset whose title says only "Microclimate": the title never mentions light, but a column does. Datasets found this way are injected into the lexical results in reserved slots (up to a quarter of the list), ranked below the ordinary matches — but they do get in.</p>
+
+  <h3><span class="chip sem">semantic index</span> one vector per dataset, bge-m3</h3>
+  <p>No word matching at all. The bge-m3 model reads a text and produces a <b>vector</b>: a list of 1,024 numbers that captures what the text is about, such that texts with similar meaning get vectors pointing in similar directions. Each dataset is turned into one vector from its title, keywords, abstract, <em>and</em> all its distinct column definitions (up to 20,000 characters). At search time your query is turned into a vector the same way, and every dataset is scored by the <b>cosine</b> between the two — 1.0 for identical direction, ~0.3 for unrelated. Here the definitions help (tested: 0.14 → 0.43 on paraphrased queries), which is the opposite of what they did to TF-IDF. That is why the two indexes are built from different text.</p>
+  <p>This is the engine that answers "how much sunlight reaches the forest floor" with a PAR dataset. Its weakness is the mirror image: it is fuzzy about exact names and sites, so on the full 10,639-package EDI corpus, where a dozen sites have tower microclimate data, it loses more than word matching does.</p>
+
+  <h2 id="g4">5. How hybrid combines two ranked lists</h2>
+  <p>The scores from the two engines are not comparable — a cosine of 0.62 and a TF-IDF score of 0.09 mean nothing next to each other. So hybrid ignores scores and uses <b>ranks</b>. The method is called reciprocal rank fusion.</p>
+  <ol>
+    <li><b>Semantic</b> scores <em>all 458</em> datasets and ranks them 1 to 458.</li>
+    <li><b>Lexical</b> returns its top <b>60</b>: 45 from the dataset index, up to 15 injected from the column index.</li>
+    <li>Each dataset gets a fused score, one term per list it appears in:</li>
+  </ol>
+  <div class="formula">score = 1 / (20 + rank in semantic list) + 1 / (20 + rank in lexical list)</div>
+  <p>The constant 20 keeps a #1 from being worth infinitely more than a #2 (the textbook value is 60; this code uses 20, which makes the top of each list count a bit more). Since every dataset has a semantic rank, a dataset that lexical never saw simply gets only its semantic term — half the formula. The top <b>10</b> by fused score are shown.</p>
+
+  <div class="example">
+    <h3>Worked example, real numbers</h3>
+    <p class="small">Query: <em>understory light sensors at the walk-up tower</em>, from the trace on 19 September 2026.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Dataset</th><th class="num">Semantic rank</th><th class="num">1/(20+r)</th><th class="num">Lexical rank</th><th class="num">1/(20+r)</th><th class="num">Fused</th><th class="num">Final</th></tr></thead>
+      <tbody>
+        <tr><td><code>hf282</code> Microclimate at the walk-up tower</td><td class="num">1</td><td class="num">0.0500</td><td class="num">2</td><td class="num">0.0476</td><td class="num"><b>0.0976</b></td><td class="num">1</td></tr>
+        <tr><td><code>hf183</code> Canopy phenology &amp; microclimate</td><td class="num">5</td><td class="num">0.0417</td><td class="num">1</td><td class="num">0.0500</td><td class="num"><b>0.0917</b></td><td class="num">2</td></tr>
+        <tr><td><code>hf249</code> Radiometric measurements</td><td class="num">3</td><td class="num">0.0455</td><td class="num">4</td><td class="num">0.0435</td><td class="num"><b>0.0889</b></td><td class="num">3</td></tr>
+        <tr><td><code>hf206</code> Microclimate at HEM, LPH, EMS towers</td><td class="num">2</td><td class="num">0.0476</td><td class="num">15</td><td class="num">0.0294</td><td class="num"><b>0.0770</b></td><td class="num">5</td></tr>
+        <tr><td><code>hf237</code> Snowpack</td><td class="num">34</td><td class="num">0.0189</td><td class="num">3</td><td class="num">0.0455</td><td class="num"><b>0.0643</b></td><td class="num">8</td></tr>
+        <tr><td><em>any dataset outside lexical's top 60</em></td><td class="num">7</td><td class="num">0.0370</td><td class="num">–</td><td class="num">0</td><td class="num"><b>0.0370</b></td><td class="num">below 10</td></tr>
+      </tbody>
+    </table></div>
+    <p>Read it like this: the two engines <em>disagreed</em> about #1 — semantic said hf282, lexical said hf183. Neither wins outright; hf282 edges ahead because its lexical rank (2) is closer to the top than hf183's semantic rank (5). hf206, semantic's #2, drops to 5th because lexical ranked it only 15th. And hf237 shows what a lopsided result looks like: lexical loved it (the word "tower" appears in its text), semantic did not (34th), so it lands 8th.</p>
+  </div>
+
+  <p>That is the whole mechanism. Two engines that fail in opposite ways — one blind to synonyms, one fuzzy about names — vote by rank, and a dataset that both like beats one that only one of them loves.</p>
+
+  <footer>
+    Sources: the <code>hf206</code> landing page and EML file; element counts over the 459 EML files harvested from EDI on 14 September 2026; Harvard Forest's search pages, probed live 19 September 2026; <code>hf_search/corpus.py</code>, <code>lexical.py</code>, <code>semantic.py</code>, <code>hybrid.py</code>; and one traced hybrid query. Written for the <code>hf-dataset-search</code> project.
+  </footer>
+</div>
