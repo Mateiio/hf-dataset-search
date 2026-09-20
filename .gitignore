@@ -19,3 +19,6 @@ data/probe/
 data/raw/
 data/evalset/fulltext/
 data/evalset/datasets/
+# working copies; the packed .gz / .f16.npy versions ship instead (GitHub's 100 MB limit)
+data/records.jsonl
+data/edi_embeddings.npy
