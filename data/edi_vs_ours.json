@@ -1,0 +1,250 @@
+[
+ {
+  "query": "weekly temperature profiles in a lake",
+  "target": "edi.552",
+  "edi_hits": 32203,
+  "edi_rank": 3,
+  "edi_top": [
+   [
+    "knb-lter-ntl.441.1",
+    "Cascade Project at North Temperate Lakes LTER: Weekly dissol"
+   ],
+   [
+    "edi.88.1",
+    "NY_ONEIDA_CHEM"
+   ]
+  ],
+  "bm25": 1,
+  "semantic": 4,
+  "hybrid": 1,
+  "hybrid_top": [
+   [
+    "edi.552.1",
+    "Weekly and high frequency temperature profile data and Secch"
+   ],
+   [
+    "edi.705.5",
+    "Global data set of long-term summertime vertical temperature"
+   ]
+  ],
+  "lexical": 1,
+  "hybrid-bm25": 1
+ },
+ {
+  "query": "coral community structure photoquadrats fore reef",
+  "target": "knb-lter-mcr.4",
+  "edi_hits": 13230,
+  "edi_rank": 9,
+  "edi_top": [
+   [
+    "knb-lter-mcr.1041.2",
+    "MCR LTER: Coral Reef: Changes in the abundance of fish funct"
+   ],
+   [
+    "knb-lter-mcr.5048.1",
+    "MCR LTER: Coral Reef: Asynchrony in coral community structur"
+   ]
+  ],
+  "bm25": 50,
+  "semantic": 10,
+  "hybrid": 16,
+  "hybrid_top": [
+   [
+    "edi.1091.1",
+    "Virgin Islands National Park: Coral Reef: Population Dynamic"
+   ],
+   [
+    "knb-lter-mcr.5048.1",
+    "MCR LTER: Coral Reef: Asynchrony in coral community structur"
+   ]
+  ],
+  "lexical": 40,
+  "hybrid-bm25": 18
+ },
+ {
+  "query": "citizen collected secchi depth measurements upper midwest",
+  "target": "knb-lter-ntl.300",
+  "edi_hits": 44942,
+  "edi_rank": 1,
+  "edi_top": [
+   [
+    "knb-lter-ntl.300.3",
+    "Upper Midwest Great Lakes Region Citizen Secchi Data 1938 - "
+   ],
+   [
+    "edi.31.1",
+    "Minnesota Pollution Control Agency Lake Monitoring Program ("
+   ]
+  ],
+  "bm25": 1,
+  "semantic": 1,
+  "hybrid": 1,
+  "hybrid_top": [
+   [
+    "knb-lter-ntl.300.3",
+    "Upper Midwest Great Lakes Region Citizen Secchi Data 1938 - "
+   ],
+   [
+    "knb-lter-cce.152.2",
+    "Mean annual Secchi depth measurements in the period starting"
+   ]
+  ],
+  "lexical": 1,
+  "hybrid-bm25": 1
+ },
+ {
+  "query": "understory light sensors at the walk-up tower",
+  "target": "knb-lter-hfr.206",
+  "edi_hits": 41376,
+  "edi_rank": 2,
+  "edi_top": [
+   [
+    "knb-lter-hfr.183.9",
+    "Canopy Phenology, Remote Sensing and Microclimate at Harvard"
+   ],
+   [
+    "knb-lter-hfr.206.30",
+    "Microclimate at Harvard Forest HEM, LPH and EMS Towers since"
+   ]
+  ],
+  "bm25": 48,
+  "semantic": 2,
+  "hybrid": 6,
+  "hybrid_top": [
+   [
+    "knb-lter-hfr.282.15",
+    "Microclimate at Harvard Forest HDW Tower since 2014"
+   ],
+   [
+    "knb-lter-hfr.183.9",
+    "Canopy Phenology, Remote Sensing and Microclimate at Harvard"
+   ]
+  ],
+  "lexical": null,
+  "hybrid-bm25": 4
+ },
+ {
+  "query": "how much sunlight reaches the forest floor",
+  "target": "knb-lter-hfr.206",
+  "edi_hits": 22103,
+  "edi_rank": null,
+  "edi_top": [
+   [
+    "knb-lter-sbc.125.2",
+    "Data to support &quot;delta13C and delta15N values from a me"
+   ],
+   [
+    "knb-lter-luq.165.519604",
+    "Canopy Trimming Experiment (CTE) Plot Treatments"
+   ]
+  ],
+  "bm25": null,
+  "semantic": null,
+  "hybrid": null,
+  "hybrid_top": [
+   [
+    "knb-lter-hfr.107.35",
+    "Light Environment in Hemlock Removal Experiment at Harvard F"
+   ],
+   [
+    "knb-lter-and.5316.4",
+    "Forest metrics derived from the 2008 Lidar point clouds, inc"
+   ]
+  ],
+  "lexical": null,
+  "hybrid-bm25": null
+ },
+ {
+  "query": "carbon dioxide breathing in and out of the forest",
+  "target": "knb-lter-hfr.4",
+  "edi_hits": 22968,
+  "edi_rank": null,
+  "edi_top": [
+   [
+    "knb-lter-sev.211.168410",
+    "The Burden of Reproduction in Lizards: Changes in Respirator"
+   ],
+   [
+    "knb-lter-fce.1191.5",
+    "Count data of air-breathing fauna from visual transect surve"
+   ]
+  ],
+  "bm25": 36,
+  "semantic": 87,
+  "hybrid": null,
+  "hybrid_top": [
+   [
+    "knb-lter-hfr.175.15",
+    "Tree Growth and Coarse Woody Debris in Regenerating Forests "
+   ],
+   [
+    "knb-lter-hbr.117.6",
+    "Total Soil Respiration Data at the Hubbard Brook Experimenta"
+   ]
+  ],
+  "lexical": null,
+  "hybrid-bm25": 44
+ },
+ {
+  "query": "Coral community structure on the fore reef is quantified using photoquadrats taken at 40 fixed locations along a 50 m transect at the 10 m isobath at six sites",
+  "target": "knb-lter-mcr.4",
+  "edi_hits": 46647,
+  "edi_rank": 2,
+  "edi_top": [
+   [
+    "knb-lter-mcr.5028.11",
+    "MCR LTER: Coral Reef: Density-dependence data for Edmunds, e"
+   ],
+   [
+    "knb-lter-mcr.4.44",
+    "MCR LTER: Coral Reef: Long-term Population and Community Dyn"
+   ]
+  ],
+  "bm25": null,
+  "semantic": 6,
+  "hybrid": 19,
+  "hybrid_top": [
+   [
+    "edi.1091.1",
+    "Virgin Islands National Park: Coral Reef: Population Dynamic"
+   ],
+   [
+    "edi.685.1",
+    "Virgin Islands National Park: Coral Reef: Population Dynamic"
+   ]
+  ],
+  "lexical": null,
+  "hybrid-bm25": 26
+ },
+ {
+  "query": "Three studies were conducted at the Plum Island Ecosystems LTER, where permanent plots are arranged along the landscape at varying distances from the creekbank to simulate different stages of sea-level rise",
+  "target": "knb-lter-pie.539",
+  "edi_hits": 47001,
+  "edi_rank": null,
+  "edi_top": [
+   [
+    "knb-lter-pie.529.2",
+    "PIE LTER plant biomass associated with marsh sites used in s"
+   ],
+   [
+    "knb-lter-pie.531.1",
+    "PIE LTER bird observations associated with marsh sites used "
+   ]
+  ],
+  "bm25": 89,
+  "semantic": 74,
+  "hybrid": 13,
+  "hybrid_top": [
+   [
+    "knb-lter-pie.649.1",
+    "Plant heights from permanent plots in a Spartina alterniflor"
+   ],
+   [
+    "knb-lter-pie.529.2",
+    "PIE LTER plant biomass associated with marsh sites used in s"
+   ]
+  ],
+  "lexical": 7,
+  "hybrid-bm25": null
+ }
+]
