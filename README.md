@@ -33,6 +33,63 @@ See **[DEMO.md](DEMO.md)** for captured terminal output from a real run.
 
 ---
 
+## Now: all of EDI
+
+The same engine now runs over the whole research tier of the
+[Environmental Data Initiative](https://edirepository.org) — the repository
+Harvard Forest and 36 other sites publish into — **10,639 data packages** in
+37 scopes, with the Harvard Forest archive as one scope among them.
+
+![the EDI search bar: keyword vs meaning on one query, a scope filter, and the evaluation view](docs/edi-demo.gif)
+
+```bash
+pip install -r requirements.txt
+ollama pull bge-m3
+python -m edisearch.serve.server       # -> http://localhost:8001
+```
+
+The corpus and its vectors ship in the repo (`data/records.jsonl.gz`,
+`data/edi_embeddings.f16.npy`, 22 + 21 MB), so a fresh clone searches all of
+EDI with nothing but Ollama for the query vector. Five engines under one
+search box — the field-weighted TF-IDF from above, plain BM25 as the textbook
+baseline, `bge-m3` vectors, and two rank-fusion hybrids — plus a scope filter,
+the streamed trace, and an evaluation view.
+
+```bash
+python -m edisearch.search "weekly temperature profiles in a lake"
+python -m edisearch.search "coral photoquadrats" --method bm25 --scope knb-lter-mcr
+python -m edisearch.search "understory light" --trace
+```
+
+What the EDI extension adds, and where it is honest about what it has not
+shown:
+
+- **[DEMO-EDI.md](DEMO-EDI.md)** — captured terminal output over the full corpus.
+- **[docs/reproduction.md](docs/reproduction.md)** — the original 17 queries
+  reproduce rank for rank on the EDI copy of Harvard Forest; at 10,639
+  packages every engine loses and the dense one loses most.
+- **[docs/edi-search-report.html](docs/edi-search-report.html)** — how it
+  compares to Harvard Forest's site search (clearly better) and to EDI's own
+  portal search (not shown better: eight probe queries, mixed result), and
+  what is left to build.
+- **[docs/fields-and-search.html](docs/fields-and-search.html)** — which
+  metadata fields exist, which each search reads, and how rank fusion works,
+  written for a high-schooler.
+- **[docs/acquisition.md](docs/acquisition.md)** — how the corpus was
+  harvested (PASTA+, authenticated; DataONE as the anonymous cross-check at
+  98.5 percent coverage).
+- **[docs/evaluation.md](docs/evaluation.md)** and
+  **[docs/yield_probe.md](docs/yield_probe.md)** — the citation-grounded
+  evaluation set being built from sentences in papers that cite EDI datasets,
+  and the report that claims only what its n supports (n = 3 today).
+
+Harvesting it yourself needs a free EDI profile (sign in with ORCID or Google
+at the portal) and an access key in a file outside the repo; see
+`edisearch/acquire/pasta.py`. Everything below this line is the original
+Harvard Forest project, unchanged and still working from the same clone.
+
+---
+
 ## What it is
 
 Three search engines over the same corpus, so you can see the difference:

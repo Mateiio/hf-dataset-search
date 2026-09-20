@@ -84,7 +84,7 @@
   <div class="stats">
     <div class="stat"><b>10,639</b><span>data packages, every current one in EDI's research tier</span></div>
     <div class="stat"><b>37</b><span>publishing scopes, from <code>edi</code> to <code>knb-lter-hfr</code></span></div>
-    <div class="stat"><b>~450k</b><span>column definitions indexed at column level</span></div>
+    <div class="stat"><b>277,055</b><span>distinct column definitions indexed at column level (394,343 columns in 21,212 tables)</span></div>
     <div class="stat"><b>0.6 s</b><span>typical hybrid query once warm; ~16 s to load</span></div>
   </div>
   <p>The corpus is the whole <b>contributed tier</b> of the Environmental Data Initiative — the research datasets, leaving out the ~36,000 bulk-loaded EcoTrends and Landsat products. Each package's EML metadata file was fetched from EDI's own API (PASTA+) with an authenticated key, parsed with the same parser the Harvard Forest engine used, and stored as one record: title, abstract, keywords, creators, coverage, methods, and every data table with every column's name, definition and unit. The 459 Harvard Forest packages are in there as one scope among 37.</p>

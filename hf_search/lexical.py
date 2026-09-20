@@ -125,7 +125,7 @@ class LexicalIndex:
         return best
 
     def search(self, query: str, k: int = 20, trace=NULL) -> list[Hit]:
-        with trace.stage("lex_tfidf", "TF-IDF over 458 dataset documents") as st:
+        with trace.stage("lex_tfidf", f"TF-IDF over {len(self.ids)} dataset documents") as st:
             q = self.vec.transform([normalise(query)])
             scores = (self.X @ q.T).toarray().ravel()
             idx_of = {d: i for i, d in enumerate(self.ids)}

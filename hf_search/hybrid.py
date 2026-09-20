@@ -80,7 +80,7 @@ class HybridIndex:
                 st.fact("max possible score", round(2.0 / RRF_K, 4))
                 st.note("Ranks, not scores, so a 0.58 cosine and a 0.12 TF-IDF "
                         "never have to be compared. Every dataset has a semantic "
-                        "rank (all 458 are scored); only the lexical top 60 "
+                        f"rank (all {len(sem_rank)} are scored); only the lexical top 60 "
                         "have a lexical rank, so a dataset lexical never saw "
                         "gets exactly half the formula.")
                 rows = []

@@ -92,7 +92,7 @@ class SemanticIndex:
             st.fact("first 6 components",
                     "  ".join(f"{x:+.3f}" for x in q[:6]) + "  ...")
             st.note("The query is now a point on the same 1024-d unit sphere as "
-                    "the 458 dataset vectors. Cosine similarity is then a plain "
+                    f"the {len(self.ids)} dataset vectors. Cosine similarity is then a plain "
                     "dot product.")
             return q / (norm or 1.0)
 

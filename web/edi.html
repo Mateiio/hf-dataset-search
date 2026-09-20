@@ -475,7 +475,7 @@ async function runTraced(q) {
 fetch("/api/scopes").then(r => r.json()).then(d => {
   const sel = $("scope");
   d.scopes.forEach(s => { const o = document.createElement("option"); o.value = s.scope; o.textContent = `${s.scope} (${s.n})`; sel.appendChild(o); });
-}).catch(() => {});
+}).catch(() => {}).finally(applyUrl);
 $("scope").onchange = () => { if ($("q").value.trim()) run(); };
 
 // ---- evaluation view -------------------------------------------------------
@@ -514,6 +514,28 @@ $("ev").onclick = async () => {
     <div class="tw"><table class="evtab"><thead><tr><th>query (sentence from the paper)</th><th class="num">overlap</th>${th}</tr></thead>
       <tbody>${rows}</tbody>
       <tfoot><tr><td><b>in top 5, of ${d.n}</b></td><td></td>${d.methods.map(m => `<td class="num"><b>${d.in_top5[m]}</b></td>`).join("")}</tr></tfoot></table></div>`;
+};
+
+// ---- shareable URLs: ?q=...&mode=...&scope=...&trace=1&view=evaluation ----
+function applyUrl() {
+  const u = new URLSearchParams(location.search);
+  if (u.get("mode") && document.querySelector(`.mode[data-m="${u.get("mode")}"]`)) {
+    mode = u.get("mode");
+    document.querySelectorAll(".mode[data-m]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.m === mode)));
+  }
+  if (u.get("trace") === "1") setTrace(true);
+  if (u.get("scope")) $("scope").value = u.get("scope");
+  if (u.get("view") === "evaluation") { $("ev").click(); return; }
+  if (u.get("q")) { $("q").value = u.get("q"); run(); }
+}
+const _run = run;
+run = async function () {
+  const u = new URLSearchParams();
+  u.set("q", $("q").value.trim()); u.set("mode", mode);
+  if ($("scope").value) u.set("scope", $("scope").value);
+  if (trace) u.set("trace", "1");
+  history.replaceState(null, "", "?" + u.toString());
+  return _run();
 };
 
 fetch("/api/status").then(r => r.json()).then(d => {
