@@ -1,8 +1,127 @@
-# Harvard Forest Search: Semantic + Lexical
+# Ecological dataset search: EDI and Harvard Forest
+
+Hybrid search — words plus meaning, merged by rank — over **all 10,639 research
+data packages in the [Environmental Data Initiative](https://edirepository.org)**,
+the repository that Harvard Forest and 36 other long-term ecological research
+sites publish into. It runs on your own machine, ships with the corpus and its
+vectors, and comes with a benchmark built from sentences in papers that cite
+the data.
+
+![the EDI search bar: keyword vs meaning on one query, a scope filter, and the evaluation view](docs/edi-demo.gif)
+
+The clip is one paraphrase — *"how much sunlight reaches the forest floor"* —
+under plain keyword matching (a salamander survey) and under meaning matching
+(light-environment datasets); then a hybrid query, the same query filtered to
+one site, and the evaluation view.
+
+## Quick start
+
+Needs Python 3.10+ and [Ollama](https://ollama.com), which turns your query
+into a vector. Everything else is in the clone.
+
+```bash
+pip install -r requirements.txt        # numpy, scikit-learn, pypdf
+ollama pull bge-m3                     # 1.1 GB, one time
+
+python -m edisearch.serve.server       # all of EDI     -> http://localhost:8001
+python -m hf_search.server             # Harvard Forest -> http://localhost:8000
+```
+
+```bash
+python -m edisearch.search "weekly temperature profiles in a lake"
+python -m edisearch.search "coral photoquadrats" --method bm25 --scope knb-lter-mcr
+python -m edisearch.search "understory light" --trace
+```
+
+Lexical modes work offline; semantic and hybrid need Ollama for the query only.
+A search result is a link: `?q=…&mode=…&scope=…`.
+
+## What is in the box
+
+| | Harvard Forest engine | EDI engine |
+|---|---|---|
+| Corpus | 458 archive datasets | 10,639 packages, 37 scopes, Harvard Forest among them |
+| Source | the archive's EML files | EDI's API (PASTA+), authenticated; DataONE as the anonymous cross-check |
+| Engines | field-weighted TF-IDF with a column-definition index, `bge-m3` vectors, rank-fusion hybrid | the same three, plus plain BM25 and a BM25 hybrid |
+| Page | `web/index.html`, trace mode | `web/edi.html`, trace mode, scope filter, evaluation view |
+| Ships with | `data/records.json`, `data/embeddings.npy` | `data/records.jsonl.gz` (22 MB), `data/edi_embeddings.f16.npy` (21 MB) |
+| Demo | [DEMO.md](DEMO.md), `docs/demo.gif` | [DEMO-EDI.md](DEMO-EDI.md), `docs/edi-demo.gif` |
+
+Same parser, same engines, same trace. `edisearch/` imports `hf_search/`
+rather than copying it.
+
+## Is it better than the searches people use today?
+
+Against **Harvard Forest's site search**, yes, and measurably: that search is
+an unranked substring match over eight fields, so `walk-up tower` misses a
+dataset whose text says `walkup`, and column names are never searched. Against
+**EDI's portal search** — a properly tuned, relevance-ranked Solr — it is
+**not shown to be better**. On eight probe queries run through both on the same
+day, the incumbent put the target in the top 10 five times and our best engine
+five times, each winning some outright. That is why the project's real
+deliverable is not the engine but the benchmark that can settle the question:
+
+- **[docs/edi-search-report.html](https://htmlpreview.github.io/?https://github.com/Mateiio/hf-dataset-search/blob/main/docs/edi-search-report.html)** —
+  how the EDI engine works, the comparison against both incumbents, what has
+  been measured with n stated, and what is left to build.
+- **[docs/fields-and-search.html](https://htmlpreview.github.io/?https://github.com/Mateiio/hf-dataset-search/blob/main/docs/fields-and-search.html)** —
+  which metadata fields exist, which each search reads, and how rank fusion
+  works, written for a high-schooler.
+- **[docs/reproduction.md](docs/reproduction.md)** — the original 17 queries
+  reproduce rank for rank on the EDI copy of Harvard Forest; at 10,639
+  packages every engine loses ground and the dense one loses most.
+- **[docs/evaluation.md](docs/evaluation.md)** — citation-grounded queries
+  scored by every engine, reported only as far as the current n allows (n = 3
+  today; the pool holds 6,871 citation links).
+- **[docs/yield_probe.md](docs/yield_probe.md)** — the pipeline from citation
+  links to candidate query sentences, and the human verdicts on them.
+- **[docs/acquisition.md](docs/acquisition.md)** — how the corpus was
+  harvested and how completely DataONE mirrors it (98.5 percent, 97.2 percent
+  current).
+
+## How the EDI engine works
+
+```
+edisearch/
+  acquire/   pasta.py      PASTA+ client, authenticated, read methods only
+             harvest.py    one scope: current package list, one EML each, records.jsonl
+             dataone.py    DataONE object store, anonymous cross-check
+             portal.py     portal counts and per-package yes/no
+             probe.py      M0: DataONE coverage of EDI, per package
+  index/     store.py      records.jsonl(.gz) -> the engines; packed vectors
+             lexical.py    plain BM25 beside the repo's TF-IDF
+             semantic.py   bge-m3 vectors, incremental, throughput printed
+  evalset/   citations.py  DataCite: which papers cite which packages
+             fulltext.py   Europe PMC XML, open PDFs; a drop folder for hand-saved ones
+             extract.py    the sentence that names the dataset; marker resolution
+             yield_probe.py, build.py   candidates for a person to judge -> queries.jsonl
+  measure/   overlap.py    query-document overlap, pinned (Porter stem, |Q∩D|/|Q|)
+             metrics.py    series-aware recall, MRR, nDCG
+             run.py, report.py   results.jsonl and a report that claims only what n supports
+  serve/     server.py     stdlib http.server, five engines, trace, evaluation view
+```
+
+Harvesting yourself needs a free EDI profile (sign in with ORCID or Google at
+the portal) and an access key in a file outside the repo; see
+`edisearch/acquire/pasta.py`. Two requests per second, reads only.
+
+```bash
+python -m edisearch.acquire.harvest knb-lter-hfr      # one scope, ~6 min
+python -m edisearch.acquire.harvest_all               # all 37, ~2.5 h
+python -m edisearch.index.semantic --build            # embed what is new, ~6 min for all
+python -m edisearch.index.store --pack                # regenerate the shipped .gz / .f16
+python -m edisearch.measure.reproduce                 # the 17 queries, both corpora
+python -m edisearch.measure.run && python -m edisearch.measure.report
+```
+
+---
+
+## The Harvard Forest engine, where this started
+
 Run a powerful, hybrid search engine over all 458 datasets in the [Harvard Forest data archive](https://harvardforest.fas.harvard.edu/harvard-forest-data-archive),—locally on your own machine. 
-## The Problem
+### The problem
 The official archive search is frustrating. Finding data requires guessing IDs, digging through prose landing pages, and repeating the process endlessly.
-## The Solution
+### The solution
 This project fixes the archive's search experience by bringing it local and making it smart:
 
 * Parses EML metadata for every dataset automatically.
@@ -33,64 +152,7 @@ See **[DEMO.md](DEMO.md)** for captured terminal output from a real run.
 
 ---
 
-## Now: all of EDI
-
-The same engine now runs over the whole research tier of the
-[Environmental Data Initiative](https://edirepository.org) — the repository
-Harvard Forest and 36 other sites publish into — **10,639 data packages** in
-37 scopes, with the Harvard Forest archive as one scope among them.
-
-![the EDI search bar: keyword vs meaning on one query, a scope filter, and the evaluation view](docs/edi-demo.gif)
-
-```bash
-pip install -r requirements.txt
-ollama pull bge-m3
-python -m edisearch.serve.server       # -> http://localhost:8001
-```
-
-The corpus and its vectors ship in the repo (`data/records.jsonl.gz`,
-`data/edi_embeddings.f16.npy`, 22 + 21 MB), so a fresh clone searches all of
-EDI with nothing but Ollama for the query vector. Five engines under one
-search box — the field-weighted TF-IDF from above, plain BM25 as the textbook
-baseline, `bge-m3` vectors, and two rank-fusion hybrids — plus a scope filter,
-the streamed trace, and an evaluation view.
-
-```bash
-python -m edisearch.search "weekly temperature profiles in a lake"
-python -m edisearch.search "coral photoquadrats" --method bm25 --scope knb-lter-mcr
-python -m edisearch.search "understory light" --trace
-```
-
-What the EDI extension adds, and where it is honest about what it has not
-shown:
-
-- **[DEMO-EDI.md](DEMO-EDI.md)** — captured terminal output over the full corpus.
-- **[docs/reproduction.md](docs/reproduction.md)** — the original 17 queries
-  reproduce rank for rank on the EDI copy of Harvard Forest; at 10,639
-  packages every engine loses and the dense one loses most.
-- **[docs/edi-search-report.html](docs/edi-search-report.html)** — how it
-  compares to Harvard Forest's site search (clearly better) and to EDI's own
-  portal search (not shown better: eight probe queries, mixed result), and
-  what is left to build.
-- **[docs/fields-and-search.html](docs/fields-and-search.html)** — which
-  metadata fields exist, which each search reads, and how rank fusion works,
-  written for a high-schooler.
-- **[docs/acquisition.md](docs/acquisition.md)** — how the corpus was
-  harvested (PASTA+, authenticated; DataONE as the anonymous cross-check at
-  98.5 percent coverage).
-- **[docs/evaluation.md](docs/evaluation.md)** and
-  **[docs/yield_probe.md](docs/yield_probe.md)** — the citation-grounded
-  evaluation set being built from sentences in papers that cite EDI datasets,
-  and the report that claims only what its n supports (n = 3 today).
-
-Harvesting it yourself needs a free EDI profile (sign in with ORCID or Google
-at the portal) and an access key in a file outside the repo; see
-`edisearch/acquire/pasta.py`. Everything below this line is the original
-Harvard Forest project, unchanged and still working from the same clone.
-
----
-
-## What it is
+### What it is
 
 Three search engines over the same corpus, so you can see the difference:
 
@@ -114,7 +176,7 @@ scores below semantic on paraphrase.
 
 ---
 
-## Running it
+### Running the Harvard Forest engine
 
 Needs Python 3.10+, and [Ollama](https://ollama.com) to embed your query.
 
@@ -139,7 +201,7 @@ python -m hf_search.benchmark            # reproduce the table above
 
 Lexical mode needs no model at all and works offline.
 
-### Trace mode
+#### Trace mode
 
 Toggle **trace** next to the engine pills to watch a query move through the
 pipeline as it runs. The page opens a streamed connection (`/api/trace`) and
@@ -160,7 +222,7 @@ The same trace prints on the command line:
 python -m hf_search.hybrid --trace "walk-up tower understory PAR sensors"
 ```
 
-### Rebuilding from the archive
+#### Rebuilding from the archive
 
 ```bash
 python -m hf_search.harvest             # refetch 458 EML files (throttled)
@@ -169,7 +231,7 @@ python -m hf_search.semantic --build    # re-embed, ~40 s
 
 ---
 
-## How it works
+### How the Harvard Forest engine works
 
 1. **`harvest.py`** fetches `hfNNN.xml` from the archive — cached, resumable,
    2 requests/second.
@@ -184,7 +246,7 @@ python -m hf_search.semantic --build    # re-embed, ~40 s
 
 ---
 
-## Known limits
+### Known limits
 
 - Casual phrasing still misses. *"How much sunlight reaches the forest floor"*
   does not find hf206, and *"cloudy versus clear sky sunlight split"* does not
@@ -195,7 +257,7 @@ python -m hf_search.semantic --build    # re-embed, ~40 s
 - 17 hand-written queries is a small evaluation set. Treat single points
   sceptically; the tables are directional.
   
-### Other limitations
+#### Other limitations
 
 **Cross-encoder reranking made it worse.** The literature calls this the single
 highest-impact retrieval component (+17.2 pp MRR@3 reported elsewhere). Here,
@@ -234,9 +296,16 @@ engines against each other.
 
 ## Data and licence
 
-Dataset metadata comes from the Harvard Forest Data Archive and is **CC0**.
-`data/records.json` is the parsed EML; `data/embeddings.npy` is derived from it.
-Raw XML is not committed — `harvest.py` refetches it.
+Harvard Forest metadata is **CC0**; `data/records.json` is the parsed EML and
+`data/embeddings.npy` is derived from it. EDI metadata is public under each
+package's own licence (almost all CC0 or CC-BY); `data/records.jsonl.gz` is the
+parsed EML for 10,639 packages and `data/edi_embeddings.f16.npy` is derived from
+it. Raw XML is not committed; `hf_search.harvest` and `edisearch.acquire.harvest`
+refetch it, the latter with a free EDI profile.
+
+The evaluation set (`data/queries.jsonl`) quotes short sentences from published
+papers under fair use, each with its DOI and character offsets so it can be
+reconstructed rather than redistributed.
 
 Code is MIT. See [LICENSE](LICENSE).
 
