@@ -4,7 +4,7 @@
 
 # EDI Search and the Incumbents
 
-*How the new search over EDI works, how it compares to the two searches people use today — Harvard Forest's site search and EDI's own portal — and what is left to build. Written to be read by a high-schooler, and to be honest about what has and has not been shown.*
+*The design of the hybrid search engine over the Environmental Data Initiative, a comparison with the two search interfaces currently in use — the Harvard Forest data archive's and EDI's own portal — the measurements made to date, and the remaining work.*
 
 ## 1. What it searches
 
@@ -51,9 +51,9 @@ Against this incumbent the new engine is better in four measurable ways: it **ra
 
 ## 4. Against EDI's portal search
 
-This is the comparison that is *not* clear-cut, and it would be dishonest to present it otherwise. EDI's portal runs Apache Solr with relevance ranking over title, abstract, keywords, methods, people, organisations, place names, coordinates, taxa, dates and funding. It is lexical — no meaning — but it is a real, tuned search engine, not a substring match. Like Harvard Forest's, it does not index anything at the column level.
+This comparison is not clear-cut. EDI's portal runs Apache Solr with relevance ranking over title, abstract, keywords, methods, people, organisations, place names, coordinates, taxa, dates and funding. It is purely lexical, but it is a tuned ranking engine rather than a substring match. Like the Harvard Forest search, it does not index anything at the column level.
 
-Eight queries were run through EDI's own search API and through each of our engines on the same day, over the same 10,639 packages. The number is the rank at which the intended dataset appeared; "–" means not in the top 100. Green is top 5, amber is top 10.
+Eight queries were run through EDI's search API and through each engine described here on the same day, over the same 10,639 packages. The number is the rank at which the intended dataset appeared; "–" means not in the top 100. Green is top 5, amber is top 10.
 
 | Query | Target | EDI portal | lexical | bm25 | semantic | hybrid |
 |---|---|---|---|---|---|---|
@@ -66,7 +66,7 @@ Eight queries were run through EDI's own search API and through each of our engi
 | *the coral sentence from a Sci Rep paper* ("…quantified using photoquadrats taken at 40 fixed locations…") | `knb-lter-mcr.4` | 2 | – | – | 6 | 19 |
 | *the Plum Island sentence from a preprint* ("…permanent plots at varying distances from the creekbank…") | `knb-lter-pie.539` | – | 7 | 89 | 74 | 13 |
 
-Read honestly: on these eight, EDI's search puts the target in the top 10 five times; our best single engine (semantic) does so five times too; hybrid four. EDI is clearly better on the two coral queries and the walk-up tower; we are clearly better on the Plum Island sentence and the temperature profiles; neither finds the pure paraphrases. Eight queries prove nothing either way — they are shown so that nobody is under the impression the incumbent is weak. It is not.
+On these eight queries, EDI's search places the target in the top 10 five times; the best single engine here (semantic) also five times; hybrid four. EDI ranks higher on the two coral queries and the walk-up tower query; the new engines rank higher on the Plum Island sentence and the temperature-profile query; neither system retrieves the target for the two pure paraphrases. Eight queries do not support a conclusion in either direction. They are reported to establish that the incumbent is a strong baseline, which the evaluation must treat it as.
 
 | Capability | Harvard Forest search | EDI portal | New engine |
 |---|---|---|---|
@@ -81,7 +81,7 @@ Read honestly: on these eight, EDI's search puts the target in the top 10 five t
 
 ## 5. What has actually been measured
 
-Three things, each with its n stated.
+Three results, each with its sample size.
 
 ### The port reproduces the original, exactly
 
@@ -94,7 +94,7 @@ On the 459 Harvard Forest packages, the engines give the same ranks on the EDI h
 | against 459 Harvard Forest packages | 0.90 | 1.00 | 0.90 | 1.00 | 1.00 |
 | against all 10,639 EDI packages | 0.60 | 0.80 | 0.30 | 0.60 | 0.70 |
 
-Those queries were written for a single site and mostly do not name it; "microclimate at the hemlock and upper-slope towers" now competes with tower microclimate from a dozen LTER sites. The semantic engine is the fuzziest about place, so it loses most. This is the single most useful thing the full corpus has taught us, and it points straight at the first item in section 6.
+Those queries were written for a single site and mostly do not name it; "microclimate at the hemlock and upper-slope towers" now competes with tower microclimate from a dozen LTER sites. The semantic engine is the fuzziest about place, so it loses most. This is the clearest result the full corpus has produced, and it motivates the second item in section 6.
 
 ### Citation-grounded queries: n = 3, a demonstration
 
@@ -104,10 +104,10 @@ Three sentences taken from papers that cite EDI datasets, judged usable by a per
 
 In order, each tied to something measured above. The rule from the plan holds: nothing is added to the engines until the benchmark can show whether it helped, which means n ≥ 30 first.
 
-1. **EDI's portal search as a baseline inside the benchmark.** Section 4 was done by hand. The harness should run every query through EDI's search API as a sixth "method" so the incumbent is in every table automatically. Half a day; no research risk; makes every later claim comparative.
+1. **EDI's portal search as a baseline inside the benchmark.** Section 4 was produced by hand. The harness should run every query through EDI's search API as a sixth method, so that the incumbent appears in every table automatically. A small change with no research risk; it makes every later result comparative.
 2. **Site awareness.** The engines index no place name, project or scope. Adding the geographic description, the site name and the project title to the lexical document — and boosting a package whose scope matches a site named in the query — targets the exact failure in the scale table. Cheap; measurable.
-3. **Methods and people.** The one capability both incumbents have and we lack. The parser already extracts both; the question is whether adding them to TF-IDF helps or dilutes, which has gone both ways before. Test, don't assume.
-4. **Field and phrase boosting for BM25.** EDI's Solr beat our BM25 on three of eight queries with the same words available. Its edismax configuration boosts title and keyword matches and rewards phrases; our BM25 is flat. BM25F with the same field weights the TF-IDF engine uses is a known technique and a fair upgrade to the baseline.
+3. **Methods and people.** The one capability both incumbents have that the new engine lacks. The parser already extracts both; the question is whether adding them to TF-IDF helps or dilutes, which has gone both ways before. Test, don't assume.
+4. **Field and phrase boosting for BM25.** EDI's Solr outranked the BM25 engine here on three of eight queries with the same words available. Its edismax configuration boosts title and keyword matches and rewards phrases; the BM25 here weights all fields equally. BM25F with the same field weights the TF-IDF engine uses is a known technique and a fair upgrade to the baseline.
 5. **Series grouping in results.** Long-running studies are published as many packages; five near-identical hits should collapse to one with a "5 periods" badge. Also needed for scoring (the plan's M5).
 6. **Controlled-vocabulary expansion.** EDI keywords come from the LTER controlled vocabulary. Expanding "PAR" to "photosynthetically active radiation" from that thesaurus at query time is domain-specific and has some novelty. It is idea 0008 in the project list — a separate piece of work.
 7. **Later, with care: fine-tune the embedding model on citation pairs.** The pairs are training data as well as test data; using them for both needs a strict split and n well past 60. Not now.
@@ -115,10 +115,10 @@ In order, each tied to something measured above. The rule from the plan holds: n
 
 ## 7. Where the real contribution is
 
-It is worth being plain about this, because the question "is our search better?" is the natural one and it is not the one the project answers. Hybrid retrieval — words plus meaning, merged by rank — is textbook and already published for dataset search. Nobody will publish a paper because we built one, and section 4 shows the incumbent is not the pushover it might look like.
+The question "is this search better?" is the natural one to ask of the system, and it is not the question the project is designed to answer. Hybrid retrieval — lexical and dense retrieval merged by rank fusion — is established practice and has been published for dataset search specifically (Terrenzi et al., 2025). The engine is therefore not a contribution in itself, and section 4 shows that the incumbent is a competent baseline.
 
-What does not exist anywhere is a **test collection for ecological dataset search built from real citation links**: queries that are sentences from papers describing data they actually used, matched to the dataset they cited, with the word overlap between query and metadata measured as a continuous number. With that in hand, the interesting statement is not "hybrid wins" but *where* each engine wins as overlap falls — and the same collection can score EDI's search, ours, and anyone else's. That is the thing being built, and the search engine is the instrument.
+What does not exist anywhere is a **test collection for ecological dataset search built from real citation links**: queries that are sentences from papers describing data they actually used, matched to the dataset they cited, with the word overlap between query and metadata measured as a continuous number. With such a collection, the result of interest is not whether hybrid retrieval wins in aggregate but *where* each method wins as query–metadata overlap falls; and the same collection can score EDI's portal search, the engines described here, and any future system on equal terms. The collection is the deliverable; the search engine is the instrument used to characterise it.
 
 ---
 
-* Sources: `docs/acquisition.md`, `docs/reproduction.md`, `docs/evaluation.md`, `docs/yield_probe.md`; Harvard Forest search pages probed live 19 September 2026; EDI's search API (`searchDataPackages`, edismax) queried the same day with the same eight queries as our engines, results in `data/edi_vs_ours.json`; decisions 0008–0010 in the project's `decisions/` folder. Companion report: *Fields and Search at Harvard Forest*. *
+* Sources: `docs/acquisition.md`, `docs/reproduction.md`, `docs/evaluation.md`, `docs/yield_probe.md`; Harvard Forest search pages probed live 19 September 2026; EDI's search API (`searchDataPackages`, edismax) queried the same day with the same eight queries as the engines here, results in `data/edi_vs_ours.json`; decisions 0008–0010 in the project's `decisions/` folder. Companion report: *Fields and Search at Harvard Forest*. *

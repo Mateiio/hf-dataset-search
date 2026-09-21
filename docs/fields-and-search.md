@@ -4,14 +4,14 @@
 
 # Fields and Search at Harvard Forest
 
-*What a dataset's description contains, which parts of it Harvard Forest's own search looks at, which parts the new search engine looks at, and how the new engine combines its two answers into one list.*
+*The structure of a Harvard Forest dataset description, the fields consulted by the archive's own search and by the new search engine, and the rank-fusion step that combines the new engine's two result lists.*
 
 ## 1. Where a dataset's description lives
 
-Every Harvard Forest dataset — take `hf206`, *Microclimate at Harvard Forest HEM, LPH and EMS Towers since 2005* — exists in three places, and they all say the same thing:
+Every Harvard Forest dataset — take `hf206`, *Microclimate at Harvard Forest HEM, LPH and EMS Towers since 2005* — exists in three places, with the same content in each:
 
 1. **The landing page** on the Harvard Forest website (`showData.html?id=hf206`). This is what a person sees: a title, an abstract, who made it, where, when, and a "Detailed Metadata" section listing every data file and every column in it.
-2. **The EML file.** Yes, it is on the landing page — the row labelled **EML file:** links to `data/eml/hf206.xml`. EML (Ecological Metadata Language) is an XML format: the same information as the landing page, but as tagged text a program can read. The landing page is *generated from* this file.
+2. **The EML file.** It is linked from the landing page: the row labelled **EML file:** points to `data/eml/hf206.xml`. EML (Ecological Metadata Language) is an XML format: the same information as the landing page, but as tagged text a program can read. The landing page is *generated from* this file.
 3. **Copies at EDI and DataONE.** Harvard Forest publishes each dataset to the Environmental Data Initiative, which gives it a package id (`knb-lter-hfr.206.30`) and a DOI. Both links are on the landing page too. The EML there is byte-for-byte the same file.
 The actual data — the CSV files with the measurements — is separate. The EML *describes* the CSVs (what each column means, its unit) but does not contain them. Search engines index the description, not the numbers.
 
@@ -44,7 +44,7 @@ The 46 datasets with no `dataTable` are ones whose files are not tables — GIS 
 
 ## 2. Landing page vs. EML file: the overlap
 
-Short answer: **the landing page is the EML file, rendered.** Of the 31 labelled fields on `hf206`'s page, 30 come straight from the XML. The only thing the website adds is **Related links** (pointers to other Harvard Forest datasets), which comes from the site's own database.
+**The landing page is the EML file, rendered.** Of the 31 labelled fields on `hf206`'s page, 30 come straight from the XML. The only thing the website adds is **Related links** (pointers to other Harvard Forest datasets), which comes from the site's own database.
 
 | Landing-page label | Where it comes from in the EML |
 |---|---|
@@ -121,7 +121,7 @@ The new engine builds **three separate indexes** from the EML, each fed differen
 | **Only Harvard Forest reads** | methods, investigators, contact, location, ID, taxa, years |
 | **Only the new engine reads** | table descriptions, table filenames, column names, column definitions, column units |
 
-> **An honest gap.** The new engine does not index **methods** or **people**, and Harvard Forest's does. A search for an investigator's name, or for a technique mentioned only in the methods text, works on the Harvard Forest site and not in the new engine. The parser already extracts both, so adding them is small — but it has not been tested, and adding text to a TF-IDF index can hurt as well as help (folding column definitions into the dataset index was tried and dropped recall from 0.90 to 0.80).
+> **Fields not indexed.** The new engine does not index **methods** or **people**; the Harvard Forest search does. A search for an investigator's name, or for a technique mentioned only in the methods text, works on the Harvard Forest site and not in the new engine. The parser already extracts both, so adding them is small — but it has not been tested, and adding text to a TF-IDF index can hurt as well as help (folding column definitions into the dataset index was tried and dropped recall from 0.90 to 0.80).
 
 ## 4. What feeds the new engine's three indexes
 
@@ -169,9 +169,9 @@ Query: *understory light sensors at the walk-up tower*, from the trace on 19 Sep
 | `hf237` Snowpack | 34 | 0.0189 | 3 | 0.0455 | **0.0643** | 8 |
 | *any dataset outside lexical's top 60* | 7 | 0.0370 | – | 0 | **0.0370** | below 10 |
 
-Read it like this: the two engines *disagreed* about #1 — semantic said hf282, lexical said hf183. Neither wins outright; hf282 edges ahead because its lexical rank (2) is closer to the top than hf183's semantic rank (5). hf206, semantic's #2, drops to 5th because lexical ranked it only 15th. And hf237 shows what a lopsided result looks like: lexical loved it (the word "tower" appears in its text), semantic did not (34th), so it lands 8th.
+The two engines *disagreed* about first place — semantic said hf282, lexical said hf183. Neither wins outright; hf282 edges ahead because its lexical rank (2) is closer to the top than hf183's semantic rank (5). hf206, semantic's #2, drops to 5th because lexical ranked it only 15th. And hf237 shows what a lopsided result looks like: lexical loved it (the word "tower" appears in its text), semantic did not (34th), so it lands 8th.
 
-That is the whole mechanism. Two engines that fail in opposite ways — one blind to synonyms, one fuzzy about names — vote by rank, and a dataset that both like beats one that only one of them loves.
+That is the entire mechanism: two engines with complementary failure modes — one insensitive to synonyms, one imprecise about names — vote by rank, and a dataset ranked well by both outranks one ranked well by only one.
 
 ---
 

@@ -50,24 +50,25 @@ A search result is a link: `?q=…&mode=…&scope=…`.
 Same parser, same engines, same trace. `edisearch/` imports `hf_search/`
 rather than copying it.
 
-## Is it better than the searches people use today?
+## Comparison with the existing searches
 
-Against **Harvard Forest's site search**, yes, and measurably: that search is
-an unranked substring match over eight fields, so `walk-up tower` misses a
-dataset whose text says `walkup`, and column names are never searched. Against
-**EDI's portal search** — a properly tuned, relevance-ranked Solr — it is
-**not shown to be better**. On eight probe queries run through both on the same
-day, the incumbent put the target in the top 10 five times and our best engine
-five times, each winning some outright. That is why the project's real
-deliverable is not the engine but the benchmark that can settle the question:
+Against the **Harvard Forest archive search** the difference is measurable:
+that search is an unranked substring match over eight fields, so `walk-up
+tower` misses a dataset whose text reads `walkup`, and column names are never
+searched. Against **EDI's portal search**, a relevance-ranked Solr deployment,
+no advantage has been shown: on eight probe queries run through both systems on
+the same day, the portal placed the target in the top 10 five times and the
+best engine here five times, each ranking higher on some queries. The project's
+deliverable is accordingly the benchmark that can decide the question, rather
+than the engine:
 
 - **[EDI Search and the Incumbents](docs/edi-search-report.md)** — how the
   EDI engine works, the comparison against both incumbents, what has been
   measured with n stated, and what is left to build
   ([styled version](https://htmlpreview.github.io/?https://github.com/Mateiio/hf-dataset-search/blob/main/docs/edi-search-report.html)).
-- **[Fields and Search at Harvard Forest](docs/fields-and-search.md)** — which
-  metadata fields exist, which each search reads, and how rank fusion works,
-  written for a high-schooler
+- **[Fields and Search at Harvard Forest](docs/fields-and-search.md)** — the
+  structure of a dataset description, the fields each search consults, and
+  how rank fusion combines two result lists
   ([styled version](https://htmlpreview.github.io/?https://github.com/Mateiio/hf-dataset-search/blob/main/docs/fields-and-search.html)).
 - **[docs/reproduction.md](docs/reproduction.md)** — the original 17 queries
   reproduce rank for rank on the EDI copy of Harvard Forest; at 10,639

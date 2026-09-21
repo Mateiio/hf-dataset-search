@@ -69,7 +69,7 @@
 <div class="page">
   <div class="eyebrow">Harvard Forest data archive · hf-dataset-search</div>
   <h1>Fields and Search at Harvard Forest</h1>
-  <p class="lede">What a dataset's description contains, which parts of it Harvard Forest's own search looks at, which parts the new search engine looks at, and how the new engine combines its two answers into one list.</p>
+  <p class="lede">The structure of a Harvard Forest dataset description, the fields consulted by the archive's own search and by the new search engine, and the rank-fusion step that combines the new engine's two result lists.</p>
 
   <nav class="toc">
     <a href="#g1"><span>1</span>Where a dataset's description lives, and what's in it</a>
@@ -80,10 +80,10 @@
   </nav>
 
   <h2 id="g1">1. Where a dataset's description lives</h2>
-  <p>Every Harvard Forest dataset — take <code>hf206</code>, <em>Microclimate at Harvard Forest HEM, LPH and EMS Towers since 2005</em> — exists in three places, and they all say the same thing:</p>
+  <p>Every Harvard Forest dataset — take <code>hf206</code>, <em>Microclimate at Harvard Forest HEM, LPH and EMS Towers since 2005</em> — exists in three places, with the same content in each:</p>
   <ol>
     <li><b>The landing page</b> on the Harvard Forest website (<code>showData.html?id=hf206</code>). This is what a person sees: a title, an abstract, who made it, where, when, and a "Detailed Metadata" section listing every data file and every column in it.</li>
-    <li><b>The EML file.</b> Yes, it is on the landing page — the row labelled <b>EML file:</b> links to <code>data/eml/hf206.xml</code>. EML (Ecological Metadata Language) is an XML format: the same information as the landing page, but as tagged text a program can read. The landing page is <em>generated from</em> this file.</li>
+    <li><b>The EML file.</b> It is linked from the landing page: the row labelled <b>EML file:</b> points to <code>data/eml/hf206.xml</code>. EML (Ecological Metadata Language) is an XML format: the same information as the landing page, but as tagged text a program can read. The landing page is <em>generated from</em> this file.</li>
     <li><b>Copies at EDI and DataONE.</b> Harvard Forest publishes each dataset to the Environmental Data Initiative, which gives it a package id (<code>knb-lter-hfr.206.30</code>) and a DOI. Both links are on the landing page too. The EML there is byte-for-byte the same file.</li>
   </ol>
   <p>The actual data — the CSV files with the measurements — is separate. The EML <em>describes</em> the CSVs (what each column means, its unit) but does not contain them. Search engines index the description, not the numbers.</p>
@@ -116,7 +116,7 @@
   <p class="small">The 46 datasets with no <code>dataTable</code> are ones whose files are not tables — GIS layers, photos — described as <code>otherEntity</code> instead. <code>hf206</code> alone has 5 tables and 344 columns.</p>
 
   <h2 id="g1b">2. Landing page vs. EML file: the overlap</h2>
-  <p>Short answer: <b>the landing page is the EML file, rendered.</b> Of the 31 labelled fields on <code>hf206</code>'s page, 30 come straight from the XML. The only thing the website adds is <b>Related links</b> (pointers to other Harvard Forest datasets), which comes from the site's own database.</p>
+  <p><b>The landing page is the EML file, rendered.</b> Of the 31 labelled fields on <code>hf206</code>'s page, 30 come straight from the XML. The only thing the website adds is <b>Related links</b> (pointers to other Harvard Forest datasets), which comes from the site's own database.</p>
   <div class="tw"><table>
     <thead><tr><th>Landing-page label</th><th>Where it comes from in the EML</th></tr></thead>
     <tbody>
@@ -196,7 +196,7 @@
     <b>Only the new engine reads</b><span>table descriptions, table filenames, column names, column definitions, column units</span>
   </div>
   <div class="callout">
-    <p><b>An honest gap.</b> The new engine does not index <b>methods</b> or <b>people</b>, and Harvard Forest's does. A search for an investigator's name, or for a technique mentioned only in the methods text, works on the Harvard Forest site and not in the new engine. The parser already extracts both, so adding them is small — but it has not been tested, and adding text to a TF-IDF index can hurt as well as help (folding column definitions into the dataset index was tried and dropped recall from 0.90 to 0.80).</p>
+    <p><b>Fields not indexed.</b> The new engine does not index <b>methods</b> or <b>people</b>; the Harvard Forest search does. A search for an investigator's name, or for a technique mentioned only in the methods text, works on the Harvard Forest site and not in the new engine. The parser already extracts both, so adding them is small — but it has not been tested, and adding text to a TF-IDF index can hurt as well as help (folding column definitions into the dataset index was tried and dropped recall from 0.90 to 0.80).</p>
   </div>
 
   <h2 id="g3">4. What feeds the new engine's three indexes</h2>
@@ -236,10 +236,10 @@
         <tr><td><em>any dataset outside lexical's top 60</em></td><td class="num">7</td><td class="num">0.0370</td><td class="num">–</td><td class="num">0</td><td class="num"><b>0.0370</b></td><td class="num">below 10</td></tr>
       </tbody>
     </table></div>
-    <p>Read it like this: the two engines <em>disagreed</em> about #1 — semantic said hf282, lexical said hf183. Neither wins outright; hf282 edges ahead because its lexical rank (2) is closer to the top than hf183's semantic rank (5). hf206, semantic's #2, drops to 5th because lexical ranked it only 15th. And hf237 shows what a lopsided result looks like: lexical loved it (the word "tower" appears in its text), semantic did not (34th), so it lands 8th.</p>
+    <p>The two engines <em>disagreed</em> about first place — semantic said hf282, lexical said hf183. Neither wins outright; hf282 edges ahead because its lexical rank (2) is closer to the top than hf183's semantic rank (5). hf206, semantic's #2, drops to 5th because lexical ranked it only 15th. And hf237 shows what a lopsided result looks like: lexical loved it (the word "tower" appears in its text), semantic did not (34th), so it lands 8th.</p>
   </div>
 
-  <p>That is the whole mechanism. Two engines that fail in opposite ways — one blind to synonyms, one fuzzy about names — vote by rank, and a dataset that both like beats one that only one of them loves.</p>
+  <p>That is the entire mechanism: two engines with complementary failure modes — one insensitive to synonyms, one imprecise about names — vote by rank, and a dataset ranked well by both outranks one ranked well by only one.</p>
 
   <footer>
     Sources: the <code>hf206</code> landing page and EML file; element counts over the 459 EML files harvested from EDI on 14 September 2026; Harvard Forest's search pages, probed live 19 September 2026; <code>hf_search/corpus.py</code>, <code>lexical.py</code>, <code>semantic.py</code>, <code>hybrid.py</code>; and one traced hybrid query. Written for the <code>hf-dataset-search</code> project.

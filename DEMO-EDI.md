@@ -8,11 +8,11 @@ EDI's 37 research scopes, harvested 2026-09-14.
 
 ---
 
-## The one that makes the case
+## Keyword matching against meaning matching
 
-Query: **"how much sunlight reaches the forest floor"** — no dataset uses
-those words. Keyword search matches the common words and returns a
-salamander survey; meaning-based search returns light-environment datasets.
+Query: **"how much sunlight reaches the forest floor"**. No dataset in the
+corpus uses this wording. BM25 matches the common words and returns a
+salamander survey; the dense engine returns light-environment datasets.
 
 ```
 $ python -m edisearch.search "how much sunlight reaches the forest floor" --method bm25 --k 3
@@ -32,10 +32,10 @@ $ python -m edisearch.search "how much sunlight reaches the forest floor" --meth
      semantic similarity
 ```
 
-Neither puts Harvard Forest's understory-PAR dataset (`knb-lter-hfr.206`) in
-the top 100 at this scale. On the 458-dataset Harvard Forest corpus the
-semantic engine ranked it 11th. That is the kind of thing the evaluation
-exists to measure rather than assert.
+Neither engine places Harvard Forest's understory-PAR dataset
+(`knb-lter-hfr.206`) in the top 100 at this scale; on the 458-dataset Harvard
+Forest corpus the dense engine ranked it 11th. The evaluation set exists to
+measure effects of this kind.
 
 ---
 
