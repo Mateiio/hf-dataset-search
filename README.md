@@ -61,12 +61,14 @@ day, the incumbent put the target in the top 10 five times and our best engine
 five times, each winning some outright. That is why the project's real
 deliverable is not the engine but the benchmark that can settle the question:
 
-- **[docs/edi-search-report.html](https://htmlpreview.github.io/?https://github.com/Mateiio/hf-dataset-search/blob/main/docs/edi-search-report.html)** —
-  how the EDI engine works, the comparison against both incumbents, what has
-  been measured with n stated, and what is left to build.
-- **[docs/fields-and-search.html](https://htmlpreview.github.io/?https://github.com/Mateiio/hf-dataset-search/blob/main/docs/fields-and-search.html)** —
-  which metadata fields exist, which each search reads, and how rank fusion
-  works, written for a high-schooler.
+- **[EDI Search and the Incumbents](docs/edi-search-report.md)** — how the
+  EDI engine works, the comparison against both incumbents, what has been
+  measured with n stated, and what is left to build
+  ([styled version](https://htmlpreview.github.io/?https://github.com/Mateiio/hf-dataset-search/blob/main/docs/edi-search-report.html)).
+- **[Fields and Search at Harvard Forest](docs/fields-and-search.md)** — which
+  metadata fields exist, which each search reads, and how rank fusion works,
+  written for a high-schooler
+  ([styled version](https://htmlpreview.github.io/?https://github.com/Mateiio/hf-dataset-search/blob/main/docs/fields-and-search.html)).
 - **[docs/reproduction.md](docs/reproduction.md)** — the original 17 queries
   reproduce rank for rank on the EDI copy of Harvard Forest; at 10,639
   packages every engine loses ground and the dense one loses most.
